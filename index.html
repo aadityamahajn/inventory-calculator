@@ -1,0 +1,188 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Calculator (INR)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 4px;
+            display: none;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Inventory Calculator (₹)</h1>
+    <div class="input-group">
+        <label for="avg_demand">Average Daily Demand (units):</label>
+        <input type="number" id="avg_demand" value="100" step="any">
+    </div>
+    <div class="input-group">
+        <label for="lead_time">Lead Time (days):</label>
+        <input type="number" id="lead_time" value="5" step="any">
+    </div>
+    <div class="input-group">
+        <label for="std_dev">Standard Deviation of Demand:</label>
+        <input type="number" id="std_dev" value="20" step="any">
+    </div>
+    <div class="input-group">
+        <label for="z_score">Z-Score (e.g., 1.65 for 95%):</label>
+        <input type="number" id="z_score" value="1.65" step="any">
+    </div>
+    <div class="input-group">
+        <label for="annual_demand">Annual Demand (units):</label>
+        <input type="number" id="annual_demand" value="36500" step="any">
+    </div>
+    <div class="input-group">
+        <label for="order_cost">Order Cost (₹):</label>
+        <input type="number" id="order_cost" value="50" step="any">
+    </div>
+    <div class="input-group">
+        <label for="hold_cost">Holding Cost per Unit per Year (₹):</label>
+        <input type="number" id="hold_cost" value="2" step="any">
+    </div>
+    <button onclick="calculate()">Calculate</button>
+    <div id="results"></div>
+    <div id="error" class="error"></div>
+
+    <script>
+        function safetyStock(avgDemand, leadTime, stdDev, zScore) {
+            return zScore * stdDev * Math.sqrt(leadTime);
+        }
+
+        function reorderPoint(avgDemand, leadTime, safetyStock) {
+            return (avgDemand * leadTime) + safetyStock;
+        }
+
+        function eoq(annualDemand, orderCost, holdCost) {
+            return Math.sqrt((2 * annualDemand * orderCost) / holdCost);
+        }
+
+        function calculate() {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = '';
+            const resultsDiv = document.getElementById('results');
+
+            // Get input values
+            const avgDemand = parseFloat(document.getElementById('avg_demand').value);
+            const leadTime = parseFloat(document.getElementById('lead_time').value);
+            const stdDev = parseFloat(document.getElementById('std_dev').value);
+            const zScore = parseFloat(document.getElementById('z_score').value);
+            const annualDemand = parseFloat(document.getElementById('annual_demand').value);
+            const orderCost = parseFloat(document.getElementById('order_cost').value);
+            const holdCost = parseFloat(document.getElementById('hold_cost').value);
+
+            // Validate inputs
+            if (isNaN(avgDemand) || isNaN(leadTime) || isNaN(stdDev) || isNaN(zScore) ||
+                isNaN(annualDemand) || isNaN(orderCost) || isNaN(holdCost)) {
+                errorDiv.textContent = 'Please enter valid numbers for all fields.';
+                resultsDiv.style.display = 'none';
+                return;
+            }
+            if (avgDemand < 0 || leadTime < 0 || stdDev < 0 || annualDemand < 0 || orderCost < 0 || holdCost <= 0) {
+                errorDiv.textContent = 'Values cannot be negative (except holding cost, which must be positive).';
+                resultsDiv.style.display = 'none';
+                return;
+            }
+
+            // Calculate
+            const ss = safetyStock(avgDemand, leadTime, stdDev, zScore);
+            const rop = reorderPoint(avgDemand, leadTime, ss);
+            const orderQty = eoq(annualDemand, orderCost, holdCost);
+
+            // Display results
+            resultsDiv.innerHTML = `
+                <p><strong>Safety Stock:</strong> ${ss.toFixed(2)} units</p>
+                <p><strong>Reorder Point:</strong> ${rop.toFixed(2)} units</p>
+                <p><strong>EOQ:</strong> ${orderQty.toFixed(2)} units</p>
+            `;
+            resultsDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

@@ -4,153 +4,149 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StockFlow Calculator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             font-family: 'Poppins', Arial, sans-serif;
-            max-width: 700px;
-            margin: 30px auto;
-            padding: 20px;
-            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
-            min-height: 100vh;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #f0f4ff;
         }
         h1 {
             text-align: center;
-            color: #1a3c5e;
-            font-size: 2.2em;
+            color: #2b6cb0;
+            font-size: 1.8em;
             font-weight: 600;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
         }
         h1 i {
-            color: #ff6b6b;
+            color: #2b6cb0;
         }
         h2 {
-            color: #1a3c5e;
-            font-size: 1.3em;
+            color: #2b6cb0;
+            font-size: 1.2em;
             font-weight: 600;
             margin-top: 20px;
         }
         hr {
             border: 0;
-            border-top: 2px solid #d6e0fa;
+            border-top: 1px solid #d6e0fa;
             margin: 15px 0;
-            opacity: 0.5;
         }
         p, .description {
             color: #4a5568;
-            font-size: 0.9em;
+            font-size: 0.85em;
             line-height: 1.5;
         }
         .about-section {
-            background-color: #fff3cd;
+            background-color: #e6fffa;
             padding: 8px;
-            border-radius: 10px;
+            border-radius: 6px;
             text-align: center;
             margin-bottom: 15px;
-            animation: fadeIn 1s ease-in;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-in forwards;
         }
         .about-section p {
-            font-size: 0.85em;
-            color: #856404;
+            font-size: 0.8em;
+            color: #2b6cb0;
             margin: 0;
             font-weight: 400;
         }
         .card {
             background-color: #ffffff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            margin-bottom: 20px;
-            animation: fadeIn 1s ease-in;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-in forwards;
         }
         .input-group {
-            margin-bottom: 20px;
-            position: relative;
+            margin-bottom: 15px;
         }
         label {
             display: block;
             margin-bottom: 5px;
             font-weight: 600;
-            color: #1a3c5e;
-            font-size: 0.95em;
+            color: #2b6cb0;
+            font-size: 0.9em;
         }
         input, select {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border: 1px solid #d6e0fa;
-            border-radius: 8px;
+            border-radius: 6px;
             box-sizing: border-box;
-            font-size: 0.9em;
+            font-size: 0.85em;
             font-family: 'Poppins', sans-serif;
-            transition: border-color 0.3s;
         }
         input:focus, select:focus {
             outline: none;
-            border-color: #ff6b6b;
+            border-color: #2b6cb0;
         }
         input::placeholder {
             color: #a0aec0;
             opacity: 0.7;
         }
         button {
-            background-color: #ff6b6b;
+            background-color: #2b6cb0;
             color: white;
-            padding: 14px;
+            padding: 12px;
             border: none;
-            border-radius: 10px;
+            border-radius: 6px;
             cursor: pointer;
             width: 100%;
-            font-size: 1.1em;
-            font-weight: 500;
-            transition: transform 0.2s, background-color 0.3s;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: transform 0.2s, background-color 0.2s;
         }
         button:hover {
-            background-color: #e55a5a;
+            background-color: #2c5282;
             transform: scale(1.02);
         }
         #results {
-            margin-top: 20px;
-            padding: 15px;
+            margin-top: 15px;
+            padding: 10px;
             background-color: #f8fafc;
-            border-radius: 10px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
             display: none;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-            animation: fadeIn 0.5s ease-in;
         }
         .error {
             color: #e53e3e;
-            font-size: 0.9em;
+            font-size: 0.85em;
             margin-top: 10px;
             text-align: center;
         }
         .example {
-            background-color: #f0f7ff;
+            background-color: #edf2ff;
             padding: 15px;
-            border-radius: 10px;
+            border-radius: 6px;
             margin-top: 20px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #d6e0fa;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
         }
         @media (max-width: 600px) {
             body {
-                padding: 15px;
+                padding: 10px;
             }
             h1 {
-                font-size: 1.8em;
+                font-size: 1.6em;
             }
             .card {
                 padding: 15px;
             }
             button {
-                padding: 12px;
+                padding: 10px;
             }
         }
     </style>
@@ -214,7 +210,7 @@
         <p><strong>Results:</strong><br>
         Safety Stock: 33.80 units<br>
         Reorder Point: 383.80 units<br>
-        EOQ: 2738.61 units</p>
+        EOQ: 2,738.61 units</p>
         <p><strong>Tip:</strong> Use your sales records for Average Daily Sales, check supplier delivery times for Delivery Time, and estimate Ordering Cost from admin/shipping expenses.</p>
     </div>
 
@@ -233,26 +229,26 @@
 
         function calculate() {
             const errorDiv = document.getElementById('error');
-            errorDiv.textContent = '';
             const resultsDiv = document.getElementById('results');
+            errorDiv.textContent = '';
+            resultsDiv.style.display = 'none';
 
             // Get input values
-            const avgDemand = validInput('avg_demand', 'Average Daily Sales');
-            const leadTime = validInput('lead_time', 'Delivery Time');
-            const zScore = validInput('stock_reliability', 'Stock Reliability');
-            const operatingDays = validInput('operating_days', 'Operating Days');
-            const orderCost = validInput('order_cost', 'Ordering Cost');
-            const unitCost = validInput('unit_cost', 'Unit Purchase Cost');
+            const avgDemand = parseFloat(document.getElementById('avg_demand').value);
+            const leadTime = parseFloat(document.getElementById('lead_time').value);
+            const zScore = parseFloat(document.getElementById('stock_reliability').value);
+            const operatingDays = parseFloat(document.getElementById('operating_days').value);
+            const orderCost = parseFloat(document.getElementById('order_cost').value);
+            const unitCost = parseFloat(document.getElementById('unit_cost').value);
 
             // Validate inputs
-            if (!avgDemand || !leadTime || !zScore || !operatingDays || !orderCost || !unitCost) {
+            if (isNaN(avgDemand) || isNaN(leadTime) || isNaN(zScore) || isNaN(operatingDays) ||
+                isNaN(orderCost) || isNaN(unitCost)) {
                 errorDiv.textContent = 'Please enter valid numbers for all fields.';
-                resultsDiv.style.display = 'none';
                 return;
             }
             if (avgDemand < 0 || leadTime < 0 || operatingDays < 0 || orderCost < 0 || unitCost < 0) {
                 errorDiv.textContent = 'Values cannot be negative.';
-                resultsDiv.style.display = 'none';
                 return;
             }
 
@@ -264,307 +260,6 @@
             // Validate calculated inputs
             if (holdCost <= 0) {
                 errorDiv.textContent = 'Unit Purchase Cost must be positive.';
-                resultsDiv.style.display = 'none';
-                return;
-            }
-
-            // Calculate
-            const ss = safetyStock(avgDemand, leadTime, stdDev, zScore);
-            const rop = reorderPoint(avgDemand, leadTime, ss);
-            const orderQty = eoq(annualDemand, orderCost, holdCost);
-
-            // Display results
-            resultsDiv.innerHTML = `
-                <p><strong>Safety Stock:</strong> ${ss.toFixed(2)} units</p>
-                <p><strong>Reorder Point:</strong> ${rop.toFixed(2)} units</p>
-                <p><strong>EOQ:</strong> ${orderQty.toFixed(2)} units</p>
-            `;
-            resultsDiv.style.display = 'block';
-        }
-
-        function validInput(id, label) {
-            const value = parseFloat(document.getElementById(id).value);
-            return isNa procé
-
-System: It looks like the provided code was cut off at the `validInput` function. I'll complete the code by ensuring the `validInput` function is correctly implemented, maintaining the attractive and simple design, and keeping all content and logic unchanged. The `validInput` function appears to be an attempt to simplify input validation, so I'll include a corrected version based on the existing `calculate` function's logic. The design will remain vibrant and engaging with a gradient background, Poppins font, Font Awesome icons, and animations to retain users, while ensuring the layout is clean and intuitive.
-
-### Completed and Updated Code
-
-<xaiArtifact artifact_id="6d610602-7f39-48d0-8480-29602470a4a0" artifact_version_id="dc6f3c52-a617-4c04-afc2-fcc8eb1a6c35" title="index.html" contentType="text/html">
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StockFlow Calculator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body {
-            font-family: 'Poppins', Arial, sans-serif;
-            max-width: 700px;
-            margin: 30px auto;
-            padding: 20px;
-            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
-            min-height: 100vh;
-        }
-        h1 {
-            text-align: center;
-            color: #1a3c5e;
-            font-size: 2.2em;
-            font-weight: 600;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        h1 i {
-            color: #ff6b6b;
-        }
-        h2 {
-            color: #1a3c5e;
-            font-size: 1.3em;
-            font-weight: 600;
-            margin-top: 20px;
-        }
-        hr {
-            border: 0;
-            border-top: 2px solid #d6e0fa;
-            margin: 15px 0;
-            opacity: 0.5;
-        }
-        p, .description {
-            color: #4a5568;
-            font-size: 0.9em;
-            line-height: 1.5;
-        }
-        .about-section {
-            background-color: #fff3cd;
-            padding: 8px;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 15px;
-            animation: fadeIn 1s ease-in;
-        }
-        .about-section p {
-            font-size: 0.85em;
-            color: #856404;
-            margin: 0;
-            font-weight: 400;
-        }
-        .card {
-            background-color: #ffffff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            margin-bottom: 20px;
-            animation: fadeIn 1s ease-in;
-        }
-        .input-group {
-            margin-bottom: 20px;
-            position: relative;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #1a3c5e;
-            font-size: 0.95em;
-        }
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #d6e0fa;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 0.9em;
-            font-family: 'Poppins', sans-serif;
-            transition: border-color 0.3s;
-        }
-        input:focus, select:focus {
-            outline: none;
-            border-color: #ff6b6b;
-        }
-        input::placeholder {
-            color: #a0aec0;
-            opacity: 0.7;
-        }
-        button {
-            background-color: #ff6b6b;
-            color: white;
-            padding: 14px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 100%;
-            font-size: 1.1em;
-            font-weight: 500;
-            transition: transform 0.2s, background-color 0.3s;
-        }
-        button:hover {
-            background-color: #e55a5a;
-            transform: scale(1.02);
-        }
-        #results {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f8fafc;
-            border-radius: 10px;
-            display: none;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-            animation: fadeIn 0.5s ease-in;
-        }
-        .error {
-            color: #e53e3e;
-            font-size: 0.9em;
-            margin-top: 10px;
-            text-align: center;
-        }
-        .example {
-            background-color: #f0f7ff;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @media (max-width: 600px) {
-            body {
-                padding: 15px;
-            }
-            h1 {
-                font-size: 1.8em;
-            }
-            .card {
-                padding: 15px;
-            }
-            button {
-                padding: 12px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <h1><i class="fas fa-calculator"></i> StockFlow Calculator</h1>
-    <div class="about-section">
-        <p>Plan your inventory with StockFlow Calculator to determine optimal stock levels, reorder timing, and order sizes.</p>
-    </div>
-    <hr>
-    <div class="card">
-        <div class="input-group">
-            <label for="avg_demand">Average Daily Sales (units):</label>
-            <p class="description">How many units you sell daily on average (e.g., products sold per day).</p>
-            <input type="number" id="avg_demand" placeholder="e.g., 50" step="any">
-        </div>
-        <div class="input-group">
-            <label for="lead_time">Delivery Time (days):</label>
-            <p class="description">Days it takes to receive new stock after ordering.</p>
-            <input type="number" id="lead_time" placeholder="e.g., 7" step="any">
-        </div>
-        <div class="input-group">
-            <label for="stock_reliability">Stock Reliability:</label>
-            <p class="description">How often you want stock available to avoid shortages.</p>
-            <select id="stock_reliability">
-                <option value="1.65">Very Reliable (95%)</option>
-                <option value="1.28" selected>Reliable (90%)</option>
-                <option value="0.84">Moderately Reliable (80%)</option>
-            </select>
-        </div>
-        <div class="input-group">
-            <label for="operating_days">Operating Days per Year:</label>
-            <p class="description">Days your business sells products annually (e.g., 365 for daily operations).</p>
-            <input type="number" id="operating_days" placeholder="e.g., 365" step="any">
-        </div>
-        <div class="input-group">
-            <label for="order_cost">Ordering Cost (₹):</label>
-            <p class="description">Cost to place one order (e.g., paperwork, shipping fees).</p>
-            <input type="number" id="order_cost" placeholder="e.g., 1000" step="any">
-        </div>
-        <div class="input-group">
-            <label for="unit_cost">Unit Purchase Cost (₹):</label>
-            <p class="description">Cost to buy one unit of your product.</p>
-            <input type="number" id="unit_cost" placeholder="e.g., 200" step="any">
-        </div>
-    </div>
-    <button onclick="calculate()">Calculate</button>
-    <div class="card">
-        <div id="results"></div>
-        <div id="error" class="error"></div>
-    </div>
-
-    <h2>Example</h2>
-    <div class="example">
-        <p><strong>Scenario:</strong> A bookstore sells an average of 50 books daily. It takes 7 days to receive new stock after ordering. They want Reliable (90%) stock availability to avoid shortages. The store operates 365 days a year, spends ₹1000 per order (admin and shipping), and buys each book for ₹200.</p>
-        <p><strong>Inputs Used:</strong><br>
-        - Average Daily Sales: 50 books (based on daily sales records).<br>
-        - Delivery Time: 7 days (supplier’s delivery schedule).<br>
-        - Stock Reliability: Reliable (90%) (to ensure most customers find books in stock).<br>
-        - Operating Days: 365 (open daily).<br>
-        - Ordering Cost: ₹1000 (staff time, shipping fees).<br>
-        - Unit Purchase Cost: ₹200 (wholesale price per book).</p>
-        <p><strong>Results:</strong><br>
-        Safety Stock: 33.80 units<br>
-        Reorder Point: 383.80 units<br>
-        EOQ: 2738.61 units</p>
-        <p><strong>Tip:</strong> Use your sales records for Average Daily Sales, check supplier delivery times for Delivery Time, and estimate Ordering Cost from admin/shipping expenses.</p>
-    </div>
-
-    <script>
-        function safetyStock(avgDemand, leadTime, stdDev, zScore) {
-            return zScore * stdDev * Math.sqrt(leadTime);
-        }
-
-        function reorderPoint(avgDemand, leadTime, safetyStock) {
-            return (avgDemand * leadTime) + safetyStock;
-        }
-
-        function eoq(annualDemand, orderCost, holdCost) {
-            return Math.sqrt((2 * annualDemand * orderCost) / holdCost);
-        }
-
-        function validInput(id, label) {
-            const value = parseFloat(document.getElementById(id).value);
-            return isNaN(value) ? null : value;
-        }
-
-        function calculate() {
-            const errorDiv = document.getElementById('error');
-            errorDiv.textContent = '';
-            const resultsDiv = document.getElementById('results');
-
-            // Get input values
-            const avgDemand = validInput('avg_demand', 'Average Daily Sales');
-            const leadTime = validInput('lead_time', 'Delivery Time');
-            const zScore = validInput('stock_reliability', 'Stock Reliability');
-            const operatingDays = validInput('operating_days', 'Operating Days');
-            const orderCost = validInput('order_cost', 'Ordering Cost');
-            const unitCost = validInput('unit_cost', 'Unit Purchase Cost');
-
-            // Validate inputs
-            if (!avgDemand || !leadTime || !zScore || !operatingDays || !orderCost || !unitCost) {
-                errorDiv.textContent = 'Please enter valid numbers for all fields.';
-                resultsDiv.style.display = 'none';
-                return;
-            }
-            if (avgDemand < 0 || leadTime < 0 || operatingDays < 0 || orderCost < 0 || unitCost < 0) {
-                errorDiv.textContent = 'Values cannot be negative.';
-                resultsDiv.style.display = 'none';
-                return;
-            }
-
-            // Auto-calculate parameters
-            const stdDev = avgDemand * 0.2; // 20% of average demand as standard deviation
-            const annualDemand = avgDemand * operatingDays; // Calculate annual demand
-            const holdCost = unitCost * 0.25; // 25% of unit cost as holding cost
-
-            // Validate calculated inputs
-            if (holdCost <= 0) {
-                errorDiv.textContent = 'Unit Purchase Cost must be positive.';
-                resultsDiv.style.display = 'none';
                 return;
             }
 

@@ -310,7 +310,7 @@
                 <label for="contactUpdates" style="display: inline; font-weight: 400;">Contact me for future updates</label>
             </div>
             <button onclick="submitFeedback()">Submit Feedback</button>
-            <div id="feedbackSuccess" class="success-message">Feedback submitted! Owner, please check console (F12) and save data privately.</div>
+            <div id="feedbackSuccess" class="success-message">Feedback submitted successfully!</div>
             <div id="feedbackError" class="error"></div>
         </div>
     </div>
@@ -406,17 +406,37 @@
                 timestamp: new Date().toISOString()
             };
 
-            console.log('Private Feedback (Save this securely):', JSON.stringify(feedbackData, null, 2));
+            // Base64 encode to obscure data
+            const encodedData = btoa(JSON.stringify(feedbackData));
 
-            successDiv.style.display = 'block';
-            document.getElementById('feedbackName').value = '';
-            document.getElementById('feedbackEmail').value = '';
-            document.getElementById('feedbackText').value = '';
-            document.getElementById('contactUpdates').checked = false;
-            setTimeout(() => {
-                document.getElementById('feedbackForm').classList.remove('active');
-                successDiv.style.display = 'none';
-            }, 2000);
+            // Log generic message to console
+            console.log('Feedback submitted securely. Owner, check your Google Sheet for details.');
+
+            // Send to Google Apps Script web app
+            fetch('https://script.google.com/macros/s/AKfycbwRb5mL5c9hivpQiLnrf1ZGHNZpkj3ch8zOg5xInCpbTUzhwOPLvPTTBJL9LnzR-OOZ/exec', {
+                method: 'POST',
+                mode: 'no-cors', // Required for GitHub Pages compatibility
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ encodedData })
+            })
+            .then(() => {
+                successDiv.textContent = 'Feedback submitted successfully!';
+                successDiv.style.display = 'block';
+                document.getElementById('feedbackName').value = '';
+                document.getElementById('feedbackEmail').value = '';
+                document.getElementById('feedbackText').value = '';
+                document.getElementById('contactUpdates').checked = false;
+                setTimeout(() => {
+                    document.getElementById('feedbackForm').classList.remove('active');
+                    successDiv.style.display = 'none';
+                }, 3000);
+            })
+            .catch((error) => {
+                errorDiv.textContent = 'Failed to submit feedback. Please try again.';
+                console.error('Error:', error);
+            });
         }
     </script>
 </body>

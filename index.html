@@ -78,7 +78,7 @@
             color: #2b6cb0;
             font-size: 0.9em;
         }
-        input, select {
+        input, select, textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #d6e0fa;
@@ -89,11 +89,15 @@
             background-color: #ffffff;
             color: #4a5568;
         }
-        input:focus, select:focus {
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #2b6cb0;
         }
-        input::placeholder {
+        input::placeholder, textarea::placeholder {
             color: #a0aec0;
             opacity: 0.7;
         }
@@ -136,6 +140,50 @@
             border: 1px solid #e6e0d4;
             color: #4a5568;
         }
+        .feedback-section {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .feedback-toggle {
+            background-color: #2b6cb0;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        .feedback-toggle:hover {
+            background-color: #2c5282;
+        }
+        .feedback-form {
+            display: none;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin-top: 10px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-in forwards;
+        }
+        .feedback-form.active {
+            display: block;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .success-message {
+            color: #2b6cb0;
+            font-size: 0.85em;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
@@ -147,10 +195,10 @@
             h1 {
                 font-size: 1.6em;
             }
-            .card {
+            .card, .feedback-form {
                 padding: 15px;
             }
-            button {
+            button, .feedback-toggle {
                 padding: 10px;
             }
         }
@@ -161,7 +209,7 @@
             .about-section {
                 background-color: #e6fffa;
             }
-            .card {
+            .card, .feedback-form {
                 background-color: #ffffff;
                 border: 1px solid #e2e8f0;
             }
@@ -173,7 +221,7 @@
                 background-color: #f8fafc;
                 border: 1px solid #e2e8f0;
             }
-            input, select {
+            input, select, textarea {
                 background-color: #ffffff;
             }
         }
@@ -242,6 +290,31 @@
         <p><strong>Tip:</strong> Use your sales records for Average Daily Sales, check supplier delivery times for Delivery Time, and estimate Ordering Cost from admin/shipping expenses.</p>
     </div>
 
+    <div class="feedback-section">
+        <button class="feedback-toggle" onclick="toggleFeedbackForm()">Give Feedback</button>
+        <div class="feedback-form" id="feedbackForm">
+            <div class="input-group">
+                <label for="feedbackName">Name:</label>
+                <input type="text" id="feedbackName" placeholder="e.g., John Doe">
+            </div>
+            <div class="input-group">
+                <label for="feedbackEmail">Email:</label>
+                <input type="email" id="feedbackEmail" placeholder="e.g., john@example.com">
+            </div>
+            <div class="input-group">
+                <label for="feedbackText">Feedback:</label>
+                <textarea id="feedbackText" placeholder="Share your thoughts on improving the calculator..."></textarea>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="contactUpdates">
+                <label for="contactUpdates" style="display: inline; font-weight: 400;">Contact me for future updates</label>
+            </div>
+            <button onclick="submitFeedback()">Submit Feedback</button>
+            <div id="feedbackSuccess" class="success-message">Feedback submitted! Owner, please check console (F12) and save data privately.</div>
+            <div id="feedbackError" class="error"></div>
+        </div>
+    </div>
+
     <script>
         function safetyStock(avgDemand, leadTime, stdDev, zScore) {
             return zScore * stdDev * Math.sqrt(leadTime);
@@ -261,7 +334,6 @@
             errorDiv.textContent = '';
             resultsDiv.style.display = 'none';
 
-            // Get input values
             const avgDemand = parseFloat(document.getElementById('avg_demand').value);
             const leadTime = parseFloat(document.getElementById('lead_time').value);
             const zScore = parseFloat(document.getElementById('stock_reliability').value);
@@ -269,7 +341,6 @@
             const orderCost = parseFloat(document.getElementById('order_cost').value);
             const unitCost = parseFloat(document.getElementById('unit_cost').value);
 
-            // Validate inputs
             if (isNaN(avgDemand) || isNaN(leadTime) || isNaN(zScore) || isNaN(operatingDays) ||
                 isNaN(orderCost) || isNaN(unitCost)) {
                 errorDiv.textContent = 'Please enter valid numbers for all fields.';
@@ -280,29 +351,72 @@
                 return;
             }
 
-            // Auto-calculate parameters
-            const stdDev = avgDemand * 0.2; // 20% of average demand as standard deviation
-            const annualDemand = avgDemand * operatingDays; // Calculate annual demand
-            const holdCost = unitCost * 0.25; // 25% of unit cost as holding cost
+            const stdDev = avgDemand * 0.2;
+            const annualDemand = avgDemand * operatingDays;
+            const holdCost = unitCost * 0.25;
 
-            // Validate calculated inputs
             if (holdCost <= 0) {
                 errorDiv.textContent = 'Unit Purchase Cost must be positive.';
                 return;
             }
 
-            // Calculate
             const ss = safetyStock(avgDemand, leadTime, stdDev, zScore);
             const rop = reorderPoint(avgDemand, leadTime, ss);
             const orderQty = eoq(annualDemand, orderCost, holdCost);
 
-            // Display results
             resultsDiv.innerHTML = `
                 <p><strong>Safety Stock:</strong> ${ss.toFixed(2)} units</p>
                 <p><strong>Reorder Point:</strong> ${rop.toFixed(2)} units</p>
                 <p><strong>EOQ:</strong> ${orderQty.toFixed(2)} units</p>
             `;
             resultsDiv.style.display = 'block';
+        }
+
+        function toggleFeedbackForm() {
+            const form = document.getElementById('feedbackForm');
+            form.classList.toggle('active');
+        }
+
+        function submitFeedback() {
+            const name = document.getElementById('feedbackName').value.trim();
+            const email = document.getElementById('feedbackEmail').value.trim();
+            const feedback = document.getElementById('feedbackText').value.trim();
+            const contactUpdates = document.getElementById('contactUpdates').checked;
+            const errorDiv = document.getElementById('feedbackError');
+            const successDiv = document.getElementById('feedbackSuccess');
+
+            errorDiv.textContent = '';
+            successDiv.style.display = 'none';
+
+            if (!name || !email || !feedback) {
+                errorDiv.textContent = 'Please fill in all fields.';
+                return;
+            }
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                errorDiv.textContent = 'Please enter a valid email address.';
+                return;
+            }
+
+            const feedbackData = {
+                name,
+                email,
+                feedback,
+                contactUpdates,
+                timestamp: new Date().toISOString()
+            };
+
+            console.log('Private Feedback (Save this securely):', JSON.stringify(feedbackData, null, 2));
+
+            successDiv.style.display = 'block';
+            document.getElementById('feedbackName').value = '';
+            document.getElementById('feedbackEmail').value = '';
+            document.getElementById('feedbackText').value = '';
+            document.getElementById('contactUpdates').checked = false;
+            setTimeout(() => {
+                document.getElementById('feedbackForm').classList.remove('active');
+                successDiv.style.display = 'none';
+            }, 2000);
         }
     </script>
 </body>

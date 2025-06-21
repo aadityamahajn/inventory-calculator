@@ -6,7 +6,6 @@
     <title>StockFlow Calculator</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.min.js"></script>
     <style>
         body {
             font-family: 'Poppins', Arial, sans-serif;
@@ -19,7 +18,7 @@
         .container {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 8px;
         }
         h1 {
             text-align: center;
@@ -43,7 +42,7 @@
         }
         .card {
             background-color: #ffffff;
-            padding: 15px;
+            padding: 10px;
             border-radius: 10px;
             border: 1px solid #e2e8f0;
             opacity: 0;
@@ -54,7 +53,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
         .card:nth-child(3) .input-section {
             margin-bottom: 5px;
@@ -127,7 +126,7 @@
         }
         .about-section {
             background-color: #e6fffa;
-            padding: 12px;
+            padding: 10px;
             border-radius: 10px;
             text-align: center;
             opacity: 0;
@@ -135,10 +134,10 @@
         }
         .example {
             background-color: #fffaf0;
-            padding: 12px;
+            padding: 10px;
             border-radius: 10px;
             border: 1px solid #e6e0d4;
-            margin-top: 15px;
+            margin-top: 8px;
         }
         .feedback-section {
             text-align: center;
@@ -157,7 +156,7 @@
         }
         .modal-content {
             background-color: #ffffff;
-            padding: 15px;
+            padding: 12px;
             border-radius: 10px;
             width: 90%;
             max-width: 400px;
@@ -177,18 +176,18 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .success-message {
             display: none;
             background-color: #e6fffa;
             color: #2b6cb0;
-            font-size: 1.8em;
+            font-size: 1.6em;
             font-weight: 600;
             text-align: center;
-            padding: 15px;
+            padding: 12px;
             border-radius: 10px;
-            margin: 15px auto;
+            margin: 8px auto;
             max-width: 600px;
             opacity: 0;
             animation: fadeIn 0.5s ease-in forwards;
@@ -214,10 +213,24 @@
         .projection-table tr:nth-child(even) {
             background-color: #f8fafc;
         }
-        canvas {
-            max-width: 100%;
-            margin-top: 12px;
+        .binary-graph {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+            margin-top: 8px;
+            padding: 5px;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            background-color: #f8fafc;
         }
+        .binary-block {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+        .green-block { background-color: #48bb78; }
+        .yellow-block { background-color: #f6e05e; }
+        .red-block { background-color: #f56565; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -234,21 +247,25 @@
                 grid-template-columns: 1fr;
             }
             .card {
-                padding: 12px;
+                padding: 8px;
             }
             button {
                 padding: 8px;
             }
             .success-message {
-                font-size: 1.4em;
-                padding: 12px;
+                font-size: 1.2em;
+                padding: 10px;
             }
             .modal-content {
                 width: 95%;
-                padding: 12px;
+                padding: 10px;
             }
             .projection-table {
                 font-size: 0.8em;
+            }
+            .binary-block {
+                width: 15px;
+                height: 15px;
             }
         }
     </style>
@@ -299,7 +316,7 @@
             </div>
             <button onclick="calculate()">Calculate</button>
             <div id="results" class="results-section"></div>
-            <canvas id="inventoryChart"></canvas>
+            <div id="inventoryGraph" class="binary-graph"></div>
             <div id="error" class="error"></div>
         </div>
 
@@ -319,7 +336,7 @@
             </div>
             <button id="projectionButton" onclick="calculateProjections()">Generate Plan</button>
             <div id="projectionResults"></div>
-            <canvas id="projectionChart"></canvas>
+            <div id="projectionGraph" class="binary-graph"></div>
             <div id="projectionError" class="error"></div>
         </div>
 
@@ -372,8 +389,6 @@
     </div>
 
     <script>
-        let inventoryChart, projectionChart;
-
         // Calculate Safety Stock: Buffer stock for demand variability
         function safetyStock(dailySales, leadTime, stdDev, zScore) {
             return zScore * stdDev * Math.sqrt(leadTime);
@@ -392,9 +407,10 @@
         function calculate() {
             const errorDiv = document.getElementById('error');
             const resultsDiv = document.getElementById('results');
+            const graphDiv = document.getElementById('inventoryGraph');
             errorDiv.textContent = '';
             resultsDiv.style.display = 'none';
-            if (inventoryChart) inventoryChart.destroy();
+            graphDiv.innerHTML = '';
 
             const dailySales = parseFloat(document.getElementById('daily_sales').value);
             const leadTime = parseFloat(document.getElementById('lead_time').value);
@@ -435,47 +451,26 @@
             `;
             resultsDiv.style.display = 'grid';
 
-            try {
-                const ctx = document.getElementById('inventoryChart').getContext('2d');
-                if (!ctx) throw new Error('Canvas context not found');
-                inventoryChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Safety Stock', 'Reorder Point', 'Optimal Order Size'],
-                        datasets: [{
-                            label: 'Inventory Metrics (units)',
-                            data: [ss, rop, orderQty],
-                            backgroundColor: ['#2b6cb0', '#2c5282', '#4299e1'],
-                            borderColor: ['#1a4971', '#1e3a5f', '#2b6cb0'],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: { display: true, text: 'Units' }
-                            }
-                        },
-                        plugins: {
-                            legend: { display: false }
-                        }
-                    }
-                });
-            } catch (e) {
-                errorDiv.textContent = 'Failed to render inventory chart. Check console for details.';
-                console.error('Chart error:', e);
-            }
+            // Generate binary graph
+            const maxValue = Math.max(ss, rop, orderQty);
+            const blocks = 10; // Fixed number of blocks for simplicity
+            graphDiv.innerHTML = Array(blocks).fill().map((_, i) => {
+                const value = (i + 1) * (maxValue / blocks);
+                let colorClass = 'green-block';
+                if (value > 0.75 * maxValue) colorClass = 'yellow-block';
+                if (value > 0.9 * maxValue) colorClass = 'red-block';
+                return `<div class="binary-block ${colorClass}"></div>`;
+            }).join('');
         }
 
         function calculateProjections() {
             const errorDiv = document.getElementById('projectionError');
             const resultsDiv = document.getElementById('projectionResults');
+            const graphDiv = document.getElementById('projectionGraph');
             const projectionButton = document.getElementById('projectionButton');
             errorDiv.textContent = '';
             resultsDiv.style.display = 'none';
-            if (projectionChart) projectionChart.destroy();
+            graphDiv.innerHTML = '';
             projectionButton.disabled = true;
 
             const dailySales = parseFloat(document.getElementById('daily_sales').value);
@@ -516,7 +511,7 @@
 
             fetch('https://script.google.com/macros/s/AKfycbzbp2nIeVzVelGYrC0mqFIAQMogcLZUegPWJ02JLvBHEVQWrdOIxn8G0QZxbq3Nwdai/exec', {
                 method: 'POST',
-                mode: 'no-cors', // Reverted to no-cors as a workaround for Google Apps Script
+                mode: 'no-cors',
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -526,13 +521,12 @@
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                // Note: With no-cors, response body is not accessible. Fallback to local calculation.
                 return simulateProjections(projectionData);
             })
             .catch(error => {
-                errorDiv.textContent = `Failed to generate projections: ${error.message}. Using local fallback.`;
-                console.error('Projection error:', error);
-                return simulateProjections(projectionData); // Fallback to local calculation
+                errorDiv.textContent = `Failed to fetch projections: ${error.message}. Using local fallback.`;
+                console.error('Fetch error:', error);
+                return simulateProjections(projectionData);
             })
             .then(data => {
                 if (data.error) {
@@ -548,33 +542,21 @@
                     `;
                     resultsDiv.style.display = 'block';
 
-                    const ctx = document.getElementById('projectionChart').getContext('2d');
-                    if (!ctx) throw new Error('Canvas context not found');
-                    projectionChart = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: data.scenarios.days,
-                            datasets: [
-                                { label: 'Expected', data: data.scenarios.expected, borderColor: '#2b6cb0', fill: false },
-                                { label: 'Best Case', data: data.scenarios.bestCase, borderColor: '#48bb78', fill: false },
-                                { label: 'Worst Case', data: data.scenarios.worstCase, borderColor: '#f56565', fill: false }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    title: { display: true, text: 'Stock Level (units)' }
-                                }
-                            }
-                        }
-                    });
+                    // Generate binary graph for projections
+                    const maxStock = Math.max(...data.scenarios.expected, ...data.scenarios.bestCase, ...data.scenarios.worstCase);
+                    const blocks = 10;
+                    graphDiv.innerHTML = Array(blocks).fill().map((_, i) => {
+                        const value = (i + 1) * (maxStock / blocks);
+                        let colorClass = 'green-block';
+                        if (value > 0.75 * maxStock) colorClass = 'yellow-block';
+                        if (value > 0.9 * maxStock) colorClass = 'red-block';
+                        return `<div class="binary-block ${colorClass}"></div>`;
+                    }).join('');
                 }
             })
             .catch(error => {
-                errorDiv.textContent = 'Failed to render projection chart. Check console for details.';
-                console.error('Chart error:', error);
+                errorDiv.textContent = `Failed to process projections: ${error.message}`;
+                console.error('Processing error:', error);
             })
             .finally(() => {
                 projectionButton.disabled = false;
@@ -583,75 +565,83 @@
 
         // Local simulation of projections (mirrors Google Apps Script logic)
         function simulateProjections(data) {
-            const { dailySales, leadTime, zScore, operatingDays, orderCost, unitCost, forecastDays, currentStock } = data;
-            const stdDev = dailySales * 0.2;
-            const safetyStock = zScore * stdDev * Math.sqrt(leadTime);
-            const reorderPoint = (dailySales * leadTime) + safetyStock;
-            const annualDemand = dailySales * operatingDays;
-            const holdCost = unitCost * 0.25;
-            const optimalOrderSize = Math.sqrt((2 * annualDemand * orderCost) / holdCost);
-
-            const totalDemand = dailySales * forecastDays;
-            const totalStockNeeded = totalDemand + safetyStock;
-            let currentStockLevel = currentStock;
-            const plan = [];
-            const dailyDemand = dailySales;
-            const expectedStockLevels = [];
-            let day = 0;
-
-            while (day < forecastDays) {
-                day++;
-                currentStockLevel -= dailyDemand;
-                expectedStockLevels.push(currentStockLevel.toFixed(2));
-                const reorder = currentStockLevel <= reorderPoint ? 'Yes' : 'No';
-                let orderAmount = 0;
-
-                if (reorder === 'Yes') {
-                    orderAmount = Math.min(optimalOrderSize, totalStockNeeded - currentStockLevel);
-                    currentStockLevel += orderAmount;
+            try {
+                const { dailySales, leadTime, zScore, operatingDays, orderCost, unitCost, forecastDays, currentStock } = data;
+                if (dailySales <= 0 || leadTime <= 0 || operatingDays <= 0 || orderCost <= 0 || unitCost <= 0 || forecastDays < 1 || currentStock < 0) {
+                    throw new Error('Invalid projection parameters');
                 }
 
-                plan.push({
-                    day: day,
-                    stockLevel: currentStockLevel.toFixed(2),
-                    reorder: reorder,
-                    orderAmount: orderAmount.toFixed(2)
-                });
+                const stdDev = dailySales * 0.2;
+                const safetyStock = zScore * stdDev * Math.sqrt(leadTime);
+                const reorderPoint = (dailySales * leadTime) + safetyStock;
+                const annualDemand = dailySales * operatingDays;
+                const holdCost = unitCost * 0.25;
+                const optimalOrderSize = Math.sqrt((2 * annualDemand * orderCost) / holdCost);
+
+                const totalDemand = dailySales * forecastDays;
+                const totalStockNeeded = totalDemand + safetyStock;
+                let currentStockLevel = currentStock;
+                const plan = [];
+                const dailyDemand = dailySales;
+                const expectedStockLevels = [];
+                let day = 0;
+
+                while (day < forecastDays) {
+                    day++;
+                    currentStockLevel -= dailyDemand;
+                    expectedStockLevels.push(currentStockLevel.toFixed(2));
+                    const reorder = currentStockLevel <= reorderPoint ? 'Yes' : 'No';
+                    let orderAmount = 0;
+
+                    if (reorder === 'Yes') {
+                        orderAmount = Math.min(optimalOrderSize, totalStockNeeded - currentStockLevel);
+                        currentStockLevel += orderAmount;
+                    }
+
+                    plan.push({
+                        day: day,
+                        stockLevel: currentStockLevel.toFixed(2),
+                        reorder: reorder,
+                        orderAmount: orderAmount.toFixed(2)
+                    });
+                }
+
+                const bestCaseDailyDemand = dailyDemand * 0.8;
+                let bestCaseStock = currentStock;
+                const bestCaseStockLevels = [];
+                for (let i = 0; i < forecastDays; i++) {
+                    bestCaseStock -= bestCaseDailyDemand;
+                    if (bestCaseStock <= reorderPoint) {
+                        bestCaseStock += optimalOrderSize;
+                    }
+                    bestCaseStockLevels.push(bestCaseStock.toFixed(2));
+                }
+
+                const worstCaseDailyDemand = dailyDemand * 1.2;
+                let worstCaseStock = currentStock;
+                const worstCaseStockLevels = [];
+                for (let i = 0; i < forecastDays; i++) {
+                    worstCaseStock -= worstCaseDailyDemand;
+                    if (worstCaseStock <= reorderPoint) {
+                        worstCaseStock += optimalOrderSize;
+                    }
+                    worstCaseStockLevels.push(worstCaseStock.toFixed(2));
+                }
+
+                return {
+                    totalStockNeeded: totalStockNeeded.toFixed(2),
+                    dailyDemand: dailyDemand.toFixed(2),
+                    plan: plan,
+                    scenarios: {
+                        expected: expectedStockLevels,
+                        bestCase: bestCaseStockLevels,
+                        worstCase: worstCaseStockLevels,
+                        days: Array.from({length: forecastDays}, (_, i) => i + 1)
+                    }
+                };
+            } catch (e) {
+                return { error: `Projection simulation failed: ${e.message}` };
             }
-
-            const bestCaseDailyDemand = dailyDemand * 0.8;
-            let bestCaseStock = currentStock;
-            const bestCaseStockLevels = [];
-            for (let i = 0; i < forecastDays; i++) {
-                bestCaseStock -= bestCaseDailyDemand;
-                if (bestCaseStock <= reorderPoint) {
-                    bestCaseStock += optimalOrderSize;
-                }
-                bestCaseStockLevels.push(bestCaseStock.toFixed(2));
-            }
-
-            const worstCaseDailyDemand = dailyDemand * 1.2;
-            let worstCaseStock = currentStock;
-            const worstCaseStockLevels = [];
-            for (let i = 0; i < forecastDays; i++) {
-                worstCaseStock -= worstCaseDailyDemand;
-                if (worstCaseStock <= reorderPoint) {
-                    worstCaseStock += optimalOrderSize;
-                }
-                worstCaseStockLevels.push(worstCaseStock.toFixed(2));
-            }
-
-            return {
-                totalStockNeeded: totalStockNeeded.toFixed(2),
-                dailyDemand: dailyDemand.toFixed(2),
-                plan: plan,
-                scenarios: {
-                    expected: expectedStockLevels,
-                    bestCase: bestCaseStockLevels,
-                    worstCase: worstCaseStockLevels,
-                    days: Array.from({length: forecastDays}, (_, i) => i + 1)
-                }
-            };
         }
 
         function openFeedbackModal() {

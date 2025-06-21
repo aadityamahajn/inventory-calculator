@@ -49,9 +49,22 @@
             animation: fadeIn 0.5s ease-in forwards;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-        .input-section, .results-section {
+        .input-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+        .input-section > .input-group {
+            flex: 1 1 calc(33.33% - 5.33px);
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 4px;
+        }
+        .results-section {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 8px;
             margin-bottom: 5px;
         }
@@ -61,38 +74,40 @@
         .input-group {
             display: flex;
             flex-direction: column;
+            margin-bottom: 4px;
         }
         label {
             font-weight: 600;
-            color: #2b6cb0;
+            color: #1a365d; /* Darker blue for labels */
             font-size: 0.9em;
             margin-bottom: 4px;
         }
         .description {
             font-size: 0.75em;
-            color: #4a5568;
+            color: #718096; /* Grayish tone for descriptions */
             font-style: italic;
             margin-top: 2px;
         }
         input, select, textarea {
-            padding: 8px;
-            border: 1px solid #d6e0fa;
-            border-radius: 6px;
+            padding: 8px; /* Increased padding for better touch targets */
+            border: 2px solid #e2e8f0; /* Lighter border */
+            border-radius: 8px; /* Rounded corners */
             font-size: 0.85em;
-            background-color: #ffffff;
-            color: #4a5568;
+            background-color: #edf2f7; /* Light gray background */
+            color: #2d3748; /* Darker text for contrast */
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
         input:focus, select:focus, textarea:focus {
             outline: none;
-            border-color: #2b6cb0;
-            box-shadow: 0 0 5px rgba(43, 108, 176, 0.2);
+            border-color: #4a90e2; /* Softer blue on focus */
+            box-shadow: 0 0 8px rgba(74, 144, 226, 0.3); /* Subtle shadow on focus */
         }
         input::placeholder, textarea::placeholder {
             color: #a0aec0;
             opacity: 0.7;
         }
         button {
-            background: linear-gradient(to right, #2b6cb0, #4299e1);
+            background: linear-gradient(to right, #4a90e2, #63b3ed); /* Gradient blue */
             color: white;
             padding: 10px;
             border: none;
@@ -103,7 +118,7 @@
             transition: transform 0.2s, background 0.2s;
         }
         button:hover {
-            background: linear-gradient(to right, #2c5282, #3182ce);
+            background: linear-gradient(to right, #357abd, #4299e1);
             transform: scale(1.02);
         }
         button:disabled {
@@ -213,29 +228,48 @@
         .projection-table tr:nth-child(even) {
             background-color: #f8fafc;
         }
-        .binary-graph {
+        .chart-container {
             display: flex;
+            flex-direction: row;
             flex-wrap: wrap;
-            gap: 2px;
-            margin-top: 8px;
-            padding: 5px;
-            border: 1px solid #e2e8f0;
+            gap: 20px;
+            padding: 10px;
+        }
+        .chart {
+            border: 1px solid #000;
             border-radius: 5px;
+            background-color: #ffffff;
+            width: 300px;
+            height: 350px;
+            position: relative;
+            overflow: hidden;
+            flex: 1 1 300px;
+        }
+        .chart .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2b6cb0;
+            text-align: center;
+            padding: 5px 0;
             background-color: #f8fafc;
+            border-bottom: 1px solid #000;
         }
-        .binary-block {
-            width: 20px;
-            height: 20px;
-            border-radius: 3px;
+        .chart svg {
+            width: 100%;
+            height: 320px;
+            padding: 10px;
         }
-        .green-block { background-color: #48bb78; }
-        .yellow-block { background-color: #f6e05e; }
-        .red-block { background-color: #f56565; }
+        .chart legend {
+            font-size: 10px;
+            color: #4a5568;
+            margin-top: 5px;
+            text-align: center;
+        }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        @media (max-width: 600px) {
+        @media (max-width: 900px) {
             body {
                 padding: 10px;
                 max-width: 100%;
@@ -243,7 +277,14 @@
             h1 {
                 font-size: 1.6em;
             }
-            .input-section, .results-section {
+            .input-section {
+                flex-direction: column;
+            }
+            .input-section > .input-group {
+                flex: 1 1 100%;
+                min-width: 0;
+            }
+            .results-section {
                 grid-template-columns: 1fr;
             }
             .card {
@@ -263,9 +304,17 @@
             .projection-table {
                 font-size: 0.8em;
             }
-            .binary-block {
-                width: 15px;
-                height: 15px;
+            .chart {
+                width: 100%;
+                height: 300px;
+            }
+            .chart .chart-title {
+                font-size: 12px;
+                padding: 3px 0;
+            }
+            .chart svg {
+                height: 270px;
+                padding: 5px;
             }
         }
     </style>
@@ -304,19 +353,19 @@
                     <p class="description">Days your business sells annually.</p>
                 </div>
                 <div class="input-group">
-                    <label for="order_cost">Ordering Cost (₹)</label>
+                    <label for="order_cost">Cost per Order (e.g., Shipping)</label>
                     <input type="number" id="order_cost" placeholder="e.g., 1000" step="any">
-                    <p class="description">Cost to place an order (e.g., shipping).</p>
+                    <p class="description">Total cost to place one order (e.g., shipping, handling fees).</p>
                 </div>
                 <div class="input-group">
-                    <label for="unit_cost">Unit Cost (₹)</label>
+                    <label for="unit_cost">Cost per Unit (e.g., Product Price)</label>
                     <input type="number" id="unit_cost" placeholder="e.g., 200" step="any">
-                    <p class="description">Cost to buy one unit.</p>
+                    <p class="description">Cost to purchase a single unit of the product.</p>
                 </div>
             </div>
             <button onclick="calculate()">Calculate</button>
             <div id="results" class="results-section"></div>
-            <div id="inventoryGraph" class="binary-graph"></div>
+            <div id="inventoryCharts" class="chart-container"></div>
             <div id="error" class="error"></div>
         </div>
 
@@ -336,14 +385,14 @@
             </div>
             <button id="projectionButton" onclick="calculateProjections()">Generate Plan</button>
             <div id="projectionResults"></div>
-            <div id="projectionGraph" class="binary-graph"></div>
+            <div id="projectionCharts" class="chart-container"></div>
             <div id="projectionError" class="error"></div>
         </div>
 
         <div class="card">
             <h2>Example</h2>
             <div class="example">
-                <p><strong>Scenario:</strong> A bookstore sells 50 books daily, with 7-day lead time, 90% service level, 365 operating days, ₹1000 ordering cost, ₹200 unit cost.</p>
+                <p><strong>Scenario:</strong> A bookstore sells 50 books daily, with 7-day lead time, 90% service level, 365 operating days, ₹1000 cost per order, ₹200 cost per unit.</p>
                 <p><strong>Results:</strong><br>
                 Safety Stock: 33.80 units<br>
                 Reorder Point: 383.80 units<br>
@@ -376,7 +425,7 @@
             </div>
             <div class="input-group">
                 <label for="feedbackText">Feedback</label>
-                <textarea id="feedbackText" placeholder="Share your thoughts on the calculator, graphs, or projections..."></textarea>
+                <textarea id="feedbackText" placeholder="Share your thoughts on the calculator, charts, or projections..."></textarea>
                 <p class="description">Suggestions to improve the tool.</p>
             </div>
             <div class="checkbox-group">
@@ -407,23 +456,18 @@
         function calculate() {
             const errorDiv = document.getElementById('error');
             const resultsDiv = document.getElementById('results');
-            const graphDiv = document.getElementById('inventoryGraph');
+            const chartDiv = document.getElementById('inventoryCharts');
             errorDiv.textContent = '';
             resultsDiv.style.display = 'none';
-            graphDiv.innerHTML = '';
+            chartDiv.innerHTML = '';
 
-            const dailySales = parseFloat(document.getElementById('daily_sales').value);
-            const leadTime = parseFloat(document.getElementById('lead_time').value);
-            const zScore = parseFloat(document.getElementById('service_level').value);
-            const operatingDays = parseFloat(document.getElementById('operating_days').value);
-            const orderCost = parseFloat(document.getElementById('order_cost').value);
-            const unitCost = parseFloat(document.getElementById('unit_cost').value);
+            const dailySales = parseFloat(document.getElementById('daily_sales').value) || 0;
+            const leadTime = parseFloat(document.getElementById('lead_time').value) || 0;
+            const zScore = parseFloat(document.getElementById('service_level').value) || 0;
+            const operatingDays = parseFloat(document.getElementById('operating_days').value) || 0;
+            const orderCost = parseFloat(document.getElementById('order_cost').value) || 0;
+            const unitCost = parseFloat(document.getElementById('unit_cost').value) || 0;
 
-            if (isNaN(dailySales) || isNaN(leadTime) || isNaN(zScore) || isNaN(operatingDays) ||
-                isNaN(orderCost) || isNaN(unitCost)) {
-                errorDiv.textContent = 'Please enter valid numbers for all fields.';
-                return;
-            }
             if (dailySales < 0 || leadTime < 0 || operatingDays < 0 || orderCost < 0 || unitCost < 0) {
                 errorDiv.textContent = 'Values cannot be negative.';
                 return;
@@ -434,7 +478,7 @@
             const holdCost = unitCost * 0.25;
 
             if (holdCost <= 0) {
-                errorDiv.textContent = 'Unit Cost must be positive.';
+                errorDiv.textContent = 'Cost per Unit must be positive.';
                 return;
             }
 
@@ -451,43 +495,80 @@
             `;
             resultsDiv.style.display = 'grid';
 
-            // Generate binary graph
-            const maxValue = Math.max(ss, rop, orderQty);
-            const blocks = 10; // Fixed number of blocks for simplicity
-            graphDiv.innerHTML = Array(blocks).fill().map((_, i) => {
-                const value = (i + 1) * (maxValue / blocks);
-                let colorClass = 'green-block';
-                if (value > 0.75 * maxValue) colorClass = 'yellow-block';
-                if (value > 0.9 * maxValue) colorClass = 'red-block';
-                return `<div class="binary-block ${colorClass}"></div>`;
-            }).join('');
+            // Generate lightweight SVG charts
+            const zScores = [0.84, 1.28, 1.65];
+            const safetyStocks = zScores.map(z => safetyStock(dailySales, leadTime, stdDev, z));
+            const maxSS = Math.max(...safetyStocks);
+            const leadTimes = [5, 7, 10];
+            const reorderPoints = leadTimes.map(l => reorderPoint(dailySales, l, ss));
+
+            chartDiv.innerHTML = `
+                <div class="chart">
+                    <div class="chart-title">Safety Stock</div>
+                    <svg viewBox="0 0 400 360">
+                        <line x1="50" y1="320" x2="350" y2="320" stroke="#000" stroke-width="1"/>
+                        <line x1="50" y1="40" x2="50" y2="320" stroke="#000" stroke-width="1"/>
+                        ${zScores.map((z, i) => `<g><circle cx="${50 + i * 100}" cy="${320 - (safetyStocks[i] / maxSS * 280)}" r="3" fill="#2b6cb0"/><title>Safety Stock: ${safetyStocks[i].toFixed(2)} units</title></g>`).join('')}
+                        <text x="50" y="275" font-size="10">0.84</text>
+                        <text x="150" y="275" font-size="10">1.28</text>
+                        <text x="250" y="275" font-size="10">1.65</text>
+                        <text x="45" y="150" font-size="10" transform="rotate(-90 45 150)">Stock Units</text>
+                        <text x="200" y="330" font-size="10" text-anchor="middle">Service Level (z-score)</text>
+                    </svg>
+                    <legend>Values by z-score</legend>
+                </div>
+                <div class="chart">
+                    <div class="chart-title">Reorder Point</div>
+                    <svg viewBox="0 0 400 360">
+                        <line x1="50" y1="320" x2="350" y2="320" stroke="#000" stroke-width="1"/>
+                        <line x1="50" y1="40" x2="50" y2="320" stroke="#000" stroke-width="1"/>
+                        ${leadTimes.map((l, i) => `<g><circle cx="${50 + i * 100}" cy="${320 - (reorderPoints[i] / Math.max(...reorderPoints) * 280)}" r="3" fill="#2b6cb0"/><title>Reorder Point: ${reorderPoints[i].toFixed(2)} units</title></g>`).join('')}
+                        <line x1="50" y1="${320 - (reorderPoints[0] / Math.max(...reorderPoints) * 280)}" x2="350" y2="${320 - (reorderPoints[2] / Math.max(...reorderPoints) * 280)}" stroke="#2b6cb0" stroke-width="2"/>
+                        <text x="50" y="275" font-size="10">5</text>
+                        <text x="150" y="275" font-size="10">7</text>
+                        <text x="250" y="275" font-size="10">10</text>
+                        <text x="45" y="150" font-size="10" transform="rotate(-90 45 150)">Stock Units</text>
+                        <text x="200" y="330" font-size="10" text-anchor="middle">Lead Time (days)</text>
+                    </svg>
+                    <legend>Values by Lead Time</legend>
+                </div>
+                <div class="chart">
+                    <div class="chart-title">EOQ vs. Annual Demand</div>
+                    <svg viewBox="0 0 400 360">
+                        <line x1="50" y1="320" x2="350" y2="320" stroke="#000" stroke-width="1"/>
+                        <line x1="50" y1="40" x2="50" y2="320" stroke="#000" stroke-width="1"/>
+                        <g><rect x="50" y="${320 - (annualDemand / Math.max(annualDemand, orderQty) * 280)}" width="150" height="${(annualDemand / Math.max(annualDemand, orderQty) * 280)}" fill="#2b6cb0"/><title>Annual Demand: ${annualDemand.toFixed(2)} units</title></g>
+                        <g><rect x="200" y="${320 - (orderQty / Math.max(annualDemand, orderQty) * 280)}" width="150" height="${(orderQty / Math.max(annualDemand, orderQty) * 280)}" fill="#2b6cb0"/><title>EOQ: ${orderQty.toFixed(2)} units</title></g>
+                        <text x="125" y="275" font-size="10">Demand</text>
+                        <text x="275" y="275" font-size="10">EOQ</text>
+                        <text x="45" y="150" font-size="10" transform="rotate(-90 45 150)">Stock Units</text>
+                        <text x="200" y="330" font-size="10" text-anchor="middle">Category</text>
+                    </svg>
+                    <legend>Bars represent Annual Demand and EOQ</legend>
+                </div>
+            `;
         }
 
         function calculateProjections() {
             const errorDiv = document.getElementById('projectionError');
             const resultsDiv = document.getElementById('projectionResults');
-            const graphDiv = document.getElementById('projectionGraph');
+            const chartDiv = document.getElementById('projectionCharts');
             const projectionButton = document.getElementById('projectionButton');
             errorDiv.textContent = '';
             resultsDiv.style.display = 'none';
-            graphDiv.innerHTML = '';
+            chartDiv.innerHTML = '';
             projectionButton.disabled = true;
 
-            const dailySales = parseFloat(document.getElementById('daily_sales').value);
-            const leadTime = parseFloat(document.getElementById('lead_time').value);
-            const zScore = parseFloat(document.getElementById('service_level').value);
-            const operatingDays = parseFloat(document.getElementById('operating_days').value);
-            const orderCost = parseFloat(document.getElementById('order_cost').value);
-            const unitCost = parseFloat(document.getElementById('unit_cost').value);
-            const forecastDays = parseFloat(document.getElementById('forecast_days').value);
-            const currentStock = parseFloat(document.getElementById('current_stock').value);
+            const dailySales = parseFloat(document.getElementById('daily_sales').value) || 0;
+            const leadTime = parseFloat(document.getElementById('lead_time').value) || 0;
+            const zScore = parseFloat(document.getElementById('service_level').value) || 0;
+            const operatingDays = parseFloat(document.getElementById('operating_days').value) || 0;
+            const orderCost = parseFloat(document.getElementById('order_cost').value) || 0;
+            const unitCost = parseFloat(document.getElementById('unit_cost').value) || 0;
+            const forecastDays = parseFloat(document.getElementById('forecast_days').value) || 0;
+            const currentStock = parseFloat(document.getElementById('current_stock').value) || 0;
+            const dailyDemand = dailySales; // Define dailyDemand to fix reference error
 
-            if (isNaN(dailySales) || isNaN(leadTime) || isNaN(zScore) || isNaN(operatingDays) ||
-                isNaN(orderCost) || isNaN(unitCost) || isNaN(forecastDays) || isNaN(currentStock)) {
-                errorDiv.textContent = 'Please enter valid numbers for all fields.';
-                projectionButton.disabled = false;
-                return;
-            }
             if (dailySales < 0 || leadTime < 0 || operatingDays < 0 || orderCost < 0 || unitCost < 0 ||
                 forecastDays < 1 || currentStock < 0) {
                 errorDiv.textContent = 'Values cannot be negative (Forecast Days ≥ 1).';
@@ -495,153 +576,69 @@
                 return;
             }
 
-            const projectionData = {
-                dailySales,
-                leadTime,
-                zScore,
-                operatingDays,
-                orderCost,
-                unitCost,
-                forecastDays,
-                currentStock
-            };
+            const stdDev = dailySales * 0.2;
+            const safetyStock = zScore * stdDev * Math.sqrt(leadTime);
+            const reorderPoint = (dailySales * leadTime) + safetyStock;
+            const annualDemand = dailySales * operatingDays;
+            const holdCost = unitCost * 0.25;
+            const optimalOrderSize = Math.sqrt((2 * annualDemand * orderCost) / holdCost);
 
-            const encodedData = btoa(JSON.stringify(projectionData));
-            console.log('Projection request sent to:', 'https://script.google.com/macros/s/AKfycbzbp2nIeVzVelGYrC0mqFIAQMogcLZUegPWJ02JLvBHEVQWrdOIxn8G0QZxbq3Nwdai/exec');
+            const totalDemand = dailyDemand * forecastDays;
+            const totalStockNeeded = totalDemand + safetyStock;
+            let currentStockLevel = currentStock;
+            const plan = [];
+            const stockLevels = [];
+            let day = 0;
 
-            fetch('https://script.google.com/macros/s/AKfycbzbp2nIeVzVelGYrC0mqFIAQMogcLZUegPWJ02JLvBHEVQWrdOIxn8G0QZxbq3Nwdai/exec', {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ encodedData })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return simulateProjections(projectionData);
-            })
-            .catch(error => {
-                errorDiv.textContent = `Failed to fetch projections: ${error.message}. Using local fallback.`;
-                console.error('Fetch error:', error);
-                return simulateProjections(projectionData);
-            })
-            .then(data => {
-                if (data.error) {
-                    errorDiv.textContent = data.error;
-                } else {
-                    resultsDiv.innerHTML = `
-                        <p><strong>Total Stock Needed:</strong> ${data.totalStockNeeded} units</p>
-                        <p><strong>Daily Demand:</strong> ${data.dailyDemand} units</p>
-                        <table class="projection-table">
-                            <tr><th>Day</th><th>Stock Level</th><th>Reorder</th><th>Order Amount</th></tr>
-                            ${data.plan.map(row => `<tr><td>${row.day}</td><td>${row.stockLevel}</td><td>${row.reorder}</td><td>${row.orderAmount}</td></tr>`).join('')}
-                        </table>
-                    `;
-                    resultsDiv.style.display = 'block';
+            while (day < forecastDays) {
+                day++;
+                currentStockLevel -= dailyDemand;
+                stockLevels.push(currentStockLevel);
+                const reorder = currentStockLevel <= reorderPoint ? 'Yes' : 'No';
+                let orderAmount = 0;
 
-                    // Generate binary graph for projections
-                    const maxStock = Math.max(...data.scenarios.expected, ...data.scenarios.bestCase, ...data.scenarios.worstCase);
-                    const blocks = 10;
-                    graphDiv.innerHTML = Array(blocks).fill().map((_, i) => {
-                        const value = (i + 1) * (maxStock / blocks);
-                        let colorClass = 'green-block';
-                        if (value > 0.75 * maxStock) colorClass = 'yellow-block';
-                        if (value > 0.9 * maxStock) colorClass = 'red-block';
-                        return `<div class="binary-block ${colorClass}"></div>`;
-                    }).join('');
-                }
-            })
-            .catch(error => {
-                errorDiv.textContent = `Failed to process projections: ${error.message}`;
-                console.error('Processing error:', error);
-            })
-            .finally(() => {
-                projectionButton.disabled = false;
-            });
-        }
-
-        // Local simulation of projections (mirrors Google Apps Script logic)
-        function simulateProjections(data) {
-            try {
-                const { dailySales, leadTime, zScore, operatingDays, orderCost, unitCost, forecastDays, currentStock } = data;
-                if (dailySales <= 0 || leadTime <= 0 || operatingDays <= 0 || orderCost <= 0 || unitCost <= 0 || forecastDays < 1 || currentStock < 0) {
-                    throw new Error('Invalid projection parameters');
+                if (reorder === 'Yes') {
+                    orderAmount = Math.min(optimalOrderSize, totalStockNeeded - currentStockLevel);
+                    currentStockLevel += orderAmount;
                 }
 
-                const stdDev = dailySales * 0.2;
-                const safetyStock = zScore * stdDev * Math.sqrt(leadTime);
-                const reorderPoint = (dailySales * leadTime) + safetyStock;
-                const annualDemand = dailySales * operatingDays;
-                const holdCost = unitCost * 0.25;
-                const optimalOrderSize = Math.sqrt((2 * annualDemand * orderCost) / holdCost);
-
-                const totalDemand = dailySales * forecastDays;
-                const totalStockNeeded = totalDemand + safetyStock;
-                let currentStockLevel = currentStock;
-                const plan = [];
-                const dailyDemand = dailySales;
-                const expectedStockLevels = [];
-                let day = 0;
-
-                while (day < forecastDays) {
-                    day++;
-                    currentStockLevel -= dailyDemand;
-                    expectedStockLevels.push(currentStockLevel.toFixed(2));
-                    const reorder = currentStockLevel <= reorderPoint ? 'Yes' : 'No';
-                    let orderAmount = 0;
-
-                    if (reorder === 'Yes') {
-                        orderAmount = Math.min(optimalOrderSize, totalStockNeeded - currentStockLevel);
-                        currentStockLevel += orderAmount;
-                    }
-
-                    plan.push({
-                        day: day,
-                        stockLevel: currentStockLevel.toFixed(2),
-                        reorder: reorder,
-                        orderAmount: orderAmount.toFixed(2)
-                    });
-                }
-
-                const bestCaseDailyDemand = dailyDemand * 0.8;
-                let bestCaseStock = currentStock;
-                const bestCaseStockLevels = [];
-                for (let i = 0; i < forecastDays; i++) {
-                    bestCaseStock -= bestCaseDailyDemand;
-                    if (bestCaseStock <= reorderPoint) {
-                        bestCaseStock += optimalOrderSize;
-                    }
-                    bestCaseStockLevels.push(bestCaseStock.toFixed(2));
-                }
-
-                const worstCaseDailyDemand = dailyDemand * 1.2;
-                let worstCaseStock = currentStock;
-                const worstCaseStockLevels = [];
-                for (let i = 0; i < forecastDays; i++) {
-                    worstCaseStock -= worstCaseDailyDemand;
-                    if (worstCaseStock <= reorderPoint) {
-                        worstCaseStock += optimalOrderSize;
-                    }
-                    worstCaseStockLevels.push(worstCaseStock.toFixed(2));
-                }
-
-                return {
-                    totalStockNeeded: totalStockNeeded.toFixed(2),
-                    dailyDemand: dailyDemand.toFixed(2),
-                    plan: plan,
-                    scenarios: {
-                        expected: expectedStockLevels,
-                        bestCase: bestCaseStockLevels,
-                        worstCase: worstCaseStockLevels,
-                        days: Array.from({length: forecastDays}, (_, i) => i + 1)
-                    }
-                };
-            } catch (e) {
-                return { error: `Projection simulation failed: ${e.message}` };
+                plan.push({
+                    day: day,
+                    stockLevel: currentStockLevel.toFixed(2),
+                    reorder: reorder,
+                    orderAmount: orderAmount.toFixed(2)
+                });
             }
+
+            resultsDiv.innerHTML = `
+                <p><strong>Total Stock Needed:</strong> ${totalStockNeeded.toFixed(2)} units</p>
+                <p><strong>Daily Demand:</strong> ${dailyDemand.toFixed(2)} units</p>
+                <table class="projection-table">
+                    <tr><th>Day</th><th>Stock Level</th><th>Reorder</th><th>Order Amount</th></tr>
+                    ${plan.map(row => `<tr><td>${row.day}</td><td>${row.stockLevel}</td><td>${row.reorder}</td><td>${row.orderAmount}</td></tr>`).join('')}
+                </table>
+            `;
+            resultsDiv.style.display = 'block';
+
+            // Generate lightweight SVG projection chart
+            const maxStock = Math.max(...stockLevels, currentStock);
+            chartDiv.innerHTML = `
+                <div class="chart">
+                    <div class="chart-title">Stock Depletion Trend</div>
+                    <svg viewBox="0 0 400 360">
+                        <line x1="50" y1="320" x2="350" y2="320" stroke="#000" stroke-width="1"/>
+                        <line x1="50" y1="40" x2="50" y2="320" stroke="#000" stroke-width="1"/>
+                        ${stockLevels.map((s, i) => `<g><line x1="${50 + i * (300 / (forecastDays - 1))}" y1="${320 - (s / maxStock * 280)}" x2="${50 + (i + 1) * (300 / (forecastDays - 1))}" y2="${320 - (stockLevels[i + 1] / maxStock * 280) || 320}" stroke="#2b6cb0" stroke-width="2"/><title>Day ${i + 1}: ${s.toFixed(2)} units</title></g>`).slice(0, -1).join('')}
+                        <text x="50" y="275" font-size="10">0</text>
+                        <text x="350" y="275" font-size="10">${forecastDays - 1}</text>
+                        <text x="45" y="150" font-size="10" transform="rotate(-90 45 150)">Stock Units</text>
+                        <text x="200" y="330" font-size="10" text-anchor="middle">Day</text>
+                    </svg>
+                    <legend>Values by Day</legend>
+                </div>
+            `;
+
+            projectionButton.disabled = false;
         }
 
         function openFeedbackModal() {

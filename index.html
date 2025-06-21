@@ -56,6 +56,9 @@
             gap: 8px;
             margin-bottom: 10px;
         }
+        .card:nth-child(3) .input-section {
+            margin-bottom: 5px;
+        }
         .input-group {
             display: flex;
             flex-direction: column;
@@ -391,6 +394,7 @@
             const resultsDiv = document.getElementById('results');
             errorDiv.textContent = '';
             resultsDiv.style.display = 'none';
+            if (inventoryChart) inventoryChart.destroy();
 
             const dailySales = parseFloat(document.getElementById('daily_sales').value);
             const leadTime = parseFloat(document.getElementById('lead_time').value);
@@ -422,7 +426,6 @@
             const rop = reorderPoint(dailySales, leadTime, ss);
             const orderQty = optimalOrderSize(annualDemand, orderCost, holdCost);
 
-            // Auto-populate Current Stock with Reorder Point
             document.getElementById('current_stock').value = rop.toFixed(2);
 
             resultsDiv.innerHTML = `
@@ -432,9 +435,9 @@
             `;
             resultsDiv.style.display = 'grid';
 
-            // Update inventory chart
-            if (inventoryChart) inventoryChart.destroy();
-            inventoryChart = new Chart(document.getElementById('inventoryChart'), {
+            // Ensure canvas exists and create inventory chart
+            const ctx = document.getElementById('inventoryChart').getContext('2d');
+            inventoryChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['Safety Stock', 'Reorder Point', 'Optimal Order Size'],
@@ -467,6 +470,7 @@
             const projectionButton = document.getElementById('projectionButton');
             errorDiv.textContent = '';
             resultsDiv.style.display = 'none';
+            if (projectionChart) projectionChart.destroy();
             projectionButton.disabled = true;
 
             const dailySales = parseFloat(document.getElementById('daily_sales').value);
@@ -502,32 +506,65 @@
                 currentStock
             };
 
-            // Base64 encode inputs
             const encodedData = btoa(JSON.stringify(projectionData));
+            console.log('Projection request sent to:', 'https://script.google.com/macros/s/AKfycbzbp2nIeVzVelGYrC0mqFIAQMogcLZUegPWJ02JLvBHEVQWrdOIxn8G0QZxbq3Nwdai/exec');
 
-            // Generic console message
-            console.log('Projection request sent.');
-
-            // Single API call
-            fetch('https://script.google.com/macros/s/AKfycbztnVM_IQjd4vHbpakIesiuN3ToKbzNcyQHWUuiXCeOvvQDROgaMDYLm7NVu93fVGyi/exec', {
+            fetch('https://script.google.com/macros/s/AKfycbzbp2nIeVzVelGYrC0mqFIAQMogcLZUegPWJ02JLvBHEVQWrdOIxn8G0QZxbq3Nwdai/exec', {
                 method: 'POST',
-                mode: 'no-cors',
+                mode: 'cors', // Changed from no-cors to cors
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ encodedData })
             })
-            .then(() => {
-                errorDiv.textContent = 'Processing...';
-                setTimeout(() => {
-                    errorDiv.textContent = '';
-                    resultsDiv.style.display = 'block';
-                    projectionButton.disabled = false;
-                }, 1000);
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
             })
-            .catch((error) => {
-                errorDiv.textContent = 'Failed to generate projections. Try again.';
-                console.error('Error:', error);
+            .then(data => {
+                if (data.error) {
+                    errorDiv.textContent = data.error;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <p><strong>Total Stock Needed:</strong> ${data.totalStockNeeded} units</p>
+                        <p><strong>Daily Demand:</strong> ${data.dailyDemand} units</p>
+                        <table class="projection-table">
+                            <tr><th>Day</th><th>Stock Level</th><th>Reorder</th><th>Order Amount</th></tr>
+                            ${data.plan.map(row => `<tr><td>${row.day}</td><td>${row.stockLevel}</td><td>${row.reorder}</td><td>${row.orderAmount}</td></tr>`).join('')}
+                        </table>
+                    `;
+                    resultsDiv.style.display = 'block';
+
+                    const ctx = document.getElementById('projectionChart').getContext('2d');
+                    projectionChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.scenarios.days,
+                            datasets: [
+                                { label: 'Expected', data: data.scenarios.expected, borderColor: '#2b6cb0', fill: false },
+                                { label: 'Best Case', data: data.scenarios.bestCase, borderColor: '#48bb78', fill: false },
+                                { label: 'Worst Case', data: data.scenarios.worstCase, borderColor: '#f56565', fill: false }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: { display: true, text: 'Stock Level (units)' }
+                                }
+                            }
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                errorDiv.textContent = 'Failed to generate projections. Check console for details.';
+                console.error('Projection error:', error);
+            })
+            .finally(() => {
                 projectionButton.disabled = false;
             });
         }
@@ -582,7 +619,6 @@
             };
 
             const encodedData = btoa(JSON.stringify(feedbackData));
-
             console.log('Feedback submitted securely.');
 
             fetch('https://script.google.com/macros/s/AKfycbwRb5mL5c9hivpQiLnrf1ZGHNZpkj3ch8zOg5xInCpbTUzhwOPLvPTTBJL9LnzR-OOZ/exec', {

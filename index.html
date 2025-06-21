@@ -435,33 +435,38 @@
             `;
             resultsDiv.style.display = 'grid';
 
-            // Ensure canvas exists and create inventory chart
-            const ctx = document.getElementById('inventoryChart').getContext('2d');
-            inventoryChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Safety Stock', 'Reorder Point', 'Optimal Order Size'],
-                    datasets: [{
-                        label: 'Inventory Metrics (units)',
-                        data: [ss, rop, orderQty],
-                        backgroundColor: ['#2b6cb0', '#2c5282', '#4299e1'],
-                        borderColor: ['#1a4971', '#1e3a5f', '#2b6cb0'],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: { display: true, text: 'Units' }
-                        }
+            try {
+                const ctx = document.getElementById('inventoryChart').getContext('2d');
+                if (!ctx) throw new Error('Canvas context not found');
+                inventoryChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Safety Stock', 'Reorder Point', 'Optimal Order Size'],
+                        datasets: [{
+                            label: 'Inventory Metrics (units)',
+                            data: [ss, rop, orderQty],
+                            backgroundColor: ['#2b6cb0', '#2c5282', '#4299e1'],
+                            borderColor: ['#1a4971', '#1e3a5f', '#2b6cb0'],
+                            borderWidth: 1
+                        }]
                     },
-                    plugins: {
-                        legend: { display: false }
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Units' }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
                     }
-                }
-            });
+                });
+            } catch (e) {
+                errorDiv.textContent = 'Failed to render inventory chart. Check console for details.';
+                console.error('Chart error:', e);
+            }
         }
 
         function calculateProjections() {
@@ -511,7 +516,7 @@
 
             fetch('https://script.google.com/macros/s/AKfycbzbp2nIeVzVelGYrC0mqFIAQMogcLZUegPWJ02JLvBHEVQWrdOIxn8G0QZxbq3Nwdai/exec', {
                 method: 'POST',
-                mode: 'cors', // Changed from no-cors to cors
+                mode: 'no-cors', // Reverted to no-cors as a workaround for Google Apps Script
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -521,7 +526,13 @@
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                return response.json();
+                // Note: With no-cors, response body is not accessible. Fallback to local calculation.
+                return simulateProjections(projectionData);
+            })
+            .catch(error => {
+                errorDiv.textContent = `Failed to generate projections: ${error.message}. Using local fallback.`;
+                console.error('Projection error:', error);
+                return simulateProjections(projectionData); // Fallback to local calculation
             })
             .then(data => {
                 if (data.error) {
@@ -538,6 +549,7 @@
                     resultsDiv.style.display = 'block';
 
                     const ctx = document.getElementById('projectionChart').getContext('2d');
+                    if (!ctx) throw new Error('Canvas context not found');
                     projectionChart = new Chart(ctx, {
                         type: 'line',
                         data: {
@@ -561,12 +573,85 @@
                 }
             })
             .catch(error => {
-                errorDiv.textContent = 'Failed to generate projections. Check console for details.';
-                console.error('Projection error:', error);
+                errorDiv.textContent = 'Failed to render projection chart. Check console for details.';
+                console.error('Chart error:', error);
             })
             .finally(() => {
                 projectionButton.disabled = false;
             });
+        }
+
+        // Local simulation of projections (mirrors Google Apps Script logic)
+        function simulateProjections(data) {
+            const { dailySales, leadTime, zScore, operatingDays, orderCost, unitCost, forecastDays, currentStock } = data;
+            const stdDev = dailySales * 0.2;
+            const safetyStock = zScore * stdDev * Math.sqrt(leadTime);
+            const reorderPoint = (dailySales * leadTime) + safetyStock;
+            const annualDemand = dailySales * operatingDays;
+            const holdCost = unitCost * 0.25;
+            const optimalOrderSize = Math.sqrt((2 * annualDemand * orderCost) / holdCost);
+
+            const totalDemand = dailySales * forecastDays;
+            const totalStockNeeded = totalDemand + safetyStock;
+            let currentStockLevel = currentStock;
+            const plan = [];
+            const dailyDemand = dailySales;
+            const expectedStockLevels = [];
+            let day = 0;
+
+            while (day < forecastDays) {
+                day++;
+                currentStockLevel -= dailyDemand;
+                expectedStockLevels.push(currentStockLevel.toFixed(2));
+                const reorder = currentStockLevel <= reorderPoint ? 'Yes' : 'No';
+                let orderAmount = 0;
+
+                if (reorder === 'Yes') {
+                    orderAmount = Math.min(optimalOrderSize, totalStockNeeded - currentStockLevel);
+                    currentStockLevel += orderAmount;
+                }
+
+                plan.push({
+                    day: day,
+                    stockLevel: currentStockLevel.toFixed(2),
+                    reorder: reorder,
+                    orderAmount: orderAmount.toFixed(2)
+                });
+            }
+
+            const bestCaseDailyDemand = dailyDemand * 0.8;
+            let bestCaseStock = currentStock;
+            const bestCaseStockLevels = [];
+            for (let i = 0; i < forecastDays; i++) {
+                bestCaseStock -= bestCaseDailyDemand;
+                if (bestCaseStock <= reorderPoint) {
+                    bestCaseStock += optimalOrderSize;
+                }
+                bestCaseStockLevels.push(bestCaseStock.toFixed(2));
+            }
+
+            const worstCaseDailyDemand = dailyDemand * 1.2;
+            let worstCaseStock = currentStock;
+            const worstCaseStockLevels = [];
+            for (let i = 0; i < forecastDays; i++) {
+                worstCaseStock -= worstCaseDailyDemand;
+                if (worstCaseStock <= reorderPoint) {
+                    worstCaseStock += optimalOrderSize;
+                }
+                worstCaseStockLevels.push(worstCaseStock.toFixed(2));
+            }
+
+            return {
+                totalStockNeeded: totalStockNeeded.toFixed(2),
+                dailyDemand: dailyDemand.toFixed(2),
+                plan: plan,
+                scenarios: {
+                    expected: expectedStockLevels,
+                    bestCase: bestCaseStockLevels,
+                    worstCase: worstCaseStockLevels,
+                    days: Array.from({length: forecastDays}, (_, i) => i + 1)
+                }
+            };
         }
 
         function openFeedbackModal() {

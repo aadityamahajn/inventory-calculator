@@ -6,337 +6,383 @@
     <title>StockFlow Calculator</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.min.js"></script>
     <style>
         body {
             font-family: 'Poppins', Arial, sans-serif;
-            max-width: 600px;
+            max-width: 900px;
             margin: 20px auto;
             padding: 15px;
             background-color: #f0f4ff;
             color: #4a5568;
         }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
         h1 {
             text-align: center;
             color: #2b6cb0;
-            font-size: 1.8em;
+            font-size: 2em;
             font-weight: 600;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
         }
         h1 i {
             color: #2b6cb0;
         }
         h2 {
             color: #2b6cb0;
-            font-size: 1.2em;
+            font-size: 1.4em;
             font-weight: 600;
-            margin-top: 20px;
-        }
-        hr {
-            border: 0;
-            border-top: 1px solid #d6e0fa;
-            margin: 15px 0;
-        }
-        p, .description {
-            color: #4a5568;
-            font-size: 0.85em;
-            line-height: 1.5;
-        }
-        .about-section {
-            background-color: #e6fffa;
-            padding: 8px;
-            border-radius: 6px;
-            text-align: center;
-            margin-bottom: 15px;
-            opacity: 0;
-            animation: fadeIn 0.5s ease-in forwards;
-        }
-        .about-section p {
-            font-size: 0.8em;
-            color: #2b6cb0;
-            margin: 0;
-            font-weight: 400;
+            margin-bottom: 8px;
         }
         .card {
             background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
+            padding: 15px;
+            border-radius: 10px;
             border: 1px solid #e2e8f0;
             opacity: 0;
             animation: fadeIn 0.5s ease-in forwards;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .input-section, .results-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 8px;
+            margin-bottom: 10px;
         }
         .input-group {
-            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
         }
         label {
-            display: block;
-            margin-bottom: 5px;
             font-weight: 600;
             color: #2b6cb0;
             font-size: 0.9em;
+            margin-bottom: 4px;
+        }
+        .description {
+            font-size: 0.75em;
+            color: #4a5568;
+            font-style: italic;
+            margin-top: 2px;
         }
         input, select, textarea {
-            width: 100%;
-            padding: 10px;
+            padding: 8px;
             border: 1px solid #d6e0fa;
             border-radius: 6px;
-            box-sizing: border-box;
             font-size: 0.85em;
-            font-family: 'Poppins', sans-serif;
             background-color: #ffffff;
             color: #4a5568;
-        }
-        textarea {
-            resize: vertical;
-            min-height: 80px;
         }
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #2b6cb0;
+            box-shadow: 0 0 5px rgba(43, 108, 176, 0.2);
         }
         input::placeholder, textarea::placeholder {
             color: #a0aec0;
             opacity: 0.7;
         }
         button {
-            background-color: #2b6cb0;
+            background: linear-gradient(to right, #2b6cb0, #4299e1);
             color: white;
-            padding: 12px;
+            padding: 10px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            width: 100%;
             font-size: 0.9em;
             font-weight: 600;
-            transition: transform 0.2s, background-color 0.2s;
+            transition: transform 0.2s, background 0.2s;
         }
         button:hover {
-            background-color: #2c5282;
+            background: linear-gradient(to right, #2c5282, #3182ce);
             transform: scale(1.02);
         }
         button:disabled {
-            background-color: #a0aec0;
+            background: #a0aec0;
             cursor: not-allowed;
             transform: none;
         }
-        #results {
-            margin-top: 15px;
-            padding: 10px;
+        #results, #projectionResults {
             background-color: #f8fafc;
+            padding: 12px;
             border-radius: 6px;
             border: 1px solid #e2e8f0;
             display: none;
-            color: #4a5568;
         }
         .error {
             color: #e53e3e;
             font-size: 0.85em;
-            margin-top: 10px;
             text-align: center;
+            margin-top: 8px;
         }
-        .example {
-            background-color: #fffaf0;
-            padding: 15px;
-            border-radius: 6px;
-            margin-top: 20px;
-            border: 1px solid #e6e0d4;
-            color: #4a5568;
-        }
-        .feedback-section {
-            margin-top: 20px;
+        .about-section {
+            background-color: #e6fffa;
+            padding: 12px;
+            border-radius: 10px;
             text-align: center;
-        }
-        .feedback-toggle {
-            background-color: #2b6cb0;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: 600;
-            transition: background-color 0.2s;
-        }
-        .feedback-toggle:hover {
-            background-color: #2c5282;
-        }
-        .feedback-form {
-            display: none;
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            margin-top: 10px;
             opacity: 0;
             animation: fadeIn 0.5s ease-in forwards;
         }
-        .feedback-form.active {
-            display: block;
+        .example {
+            background-color: #fffaf0;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #e6e0d4;
+            margin-top: 15px;
+        }
+        .feedback-section {
+            text-align: center;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            opacity: 0;
+            animation: fadeIn 0.3s ease-in forwards;
+        }
+        .close {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 1.5em;
+            color: #4a5568;
+            cursor: pointer;
         }
         .checkbox-group {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
         .success-message {
-            color: #2b6cb0;
-            font-size: 1.2em;
-            font-weight: 600;
-            margin-top: 15px;
-            text-align: center;
             display: none;
             background-color: #e6fffa;
-            padding: 10px;
-            border-radius: 6px;
+            color: #2b6cb0;
+            font-size: 1.8em;
+            font-weight: 600;
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px auto;
+            max-width: 600px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-in forwards;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .projection-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            font-size: 0.85em;
+            overflow-x: auto;
+            display: block;
+        }
+        .projection-table th, .projection-table td {
+            border: 1px solid #d6e0fa;
+            padding: 6px;
+            text-align: left;
+        }
+        .projection-table th {
+            background-color: #2b6cb0;
+            color: white;
+        }
+        .projection-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        canvas {
+            max-width: 100%;
+            margin-top: 12px;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
         @media (max-width: 600px) {
             body {
                 padding: 10px;
+                max-width: 100%;
             }
             h1 {
                 font-size: 1.6em;
             }
-            .card, .feedback-form {
-                padding: 15px;
+            .input-section, .results-section {
+                grid-template-columns: 1fr;
             }
-            button, .feedback-toggle {
-                padding: 10px;
+            .card {
+                padding: 12px;
+            }
+            button {
+                padding: 8px;
             }
             .success-message {
-                font-size: 1.1em;
+                font-size: 1.4em;
+                padding: 12px;
             }
-        }
-        @media (min-width: 601px) {
-            body {
-                background-color: #f0f4ff;
+            .modal-content {
+                width: 95%;
+                padding: 12px;
             }
-            .about-section {
-                background-color: #e6fffa;
-            }
-            .card, .feedback-form {
-                background-color: #ffffff;
-                border: 1px solid #e2e8f0;
-            }
-            .example {
-                background-color: #fffaf0;
-                border: 1px solid #e6e0d4;
-            }
-            #results {
-                background-color: #f8fafc;
-                border: 1px solid #e2e8f0;
-            }
-            input, select, textarea {
-                background-color: #ffffff;
+            .projection-table {
+                font-size: 0.8em;
             }
         }
     </style>
 </head>
 <body>
-    <h1><i class="fas fa-calculator"></i> StockFlow Calculator</h1>
-    <div class="about-section">
-        <p>Plan your inventory with StockFlow Calculator to determine optimal stock levels, reorder timing, and order sizes.</p>
-    </div>
-    <hr>
-    <div class="card">
-        <div class="input-group">
-            <label for="avg_demand">Average Daily Sales (units):</label>
-            <p class="description">How many units you sell daily on average (e.g., products sold per day).</p>
-            <input type="number" id="avg_demand" placeholder="e.g., 50" step="any">
+    <div class="container">
+        <h1><i class="fas fa-calculator"></i> StockFlow Calculator</h1>
+        <div class="about-section">
+            <p>Streamline your inventory with StockFlow: optimize stock, plan reorders, and visualize future needs.</p>
         </div>
-        <div class="input-group">
-            <label for="lead_time">Delivery Time (days):</label>
-            <p class="description">Days it takes to receive new stock after ordering.</p>
-            <input type="number" id="lead_time" placeholder="e.g., 7" step="any">
+        <div class="card">
+            <h2>Inventory Inputs</h2>
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="daily_sales">Daily Sales (units)</label>
+                    <input type="number" id="daily_sales" placeholder="e.g., 50" step="any">
+                    <p class="description">Units sold per day, from sales records.</p>
+                </div>
+                <div class="input-group">
+                    <label for="lead_time">Lead Time (days)</label>
+                    <input type="number" id="lead_time" placeholder="e.g., 7" step="any">
+                    <p class="description">Days to receive stock after ordering.</p>
+                </div>
+                <div class="input-group">
+                    <label for="service_level">Service Level</label>
+                    <select id="service_level">
+                        <option value="1.65">Very High (95%)</option>
+                        <option value="1.28" selected>High (90%)</option>
+                        <option value="0.84">Moderate (80%)</option>
+                    </select>
+                    <p class="description">Chance of avoiding stock shortages.</p>
+                </div>
+                <div class="input-group">
+                    <label for="operating_days">Operating Days per Year</label>
+                    <input type="number" id="operating_days" placeholder="e.g., 365" step="any">
+                    <p class="description">Days your business sells annually.</p>
+                </div>
+                <div class="input-group">
+                    <label for="order_cost">Ordering Cost (₹)</label>
+                    <input type="number" id="order_cost" placeholder="e.g., 1000" step="any">
+                    <p class="description">Cost to place an order (e.g., shipping).</p>
+                </div>
+                <div class="input-group">
+                    <label for="unit_cost">Unit Cost (₹)</label>
+                    <input type="number" id="unit_cost" placeholder="e.g., 200" step="any">
+                    <p class="description">Cost to buy one unit.</p>
+                </div>
+            </div>
+            <button onclick="calculate()">Calculate</button>
+            <div id="results" class="results-section"></div>
+            <canvas id="inventoryChart"></canvas>
+            <div id="error" class="error"></div>
         </div>
-        <div class="input-group">
-            <label for="stock_reliability">Stock Reliability:</label>
-            <p class="description">How often you want stock available to avoid shortages.</p>
-            <select id="stock_reliability">
-                <option value="1.65">Very Reliable (95%)</option>
-                <option value="1.28" selected>Reliable (90%)</option>
-                <option value="0.84">Moderately Reliable (80%)</option>
-            </select>
+
+        <div class="card">
+            <h2>Projections and Planning</h2>
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="forecast_days">Forecast Days</label>
+                    <input type="number" id="forecast_days" placeholder="e.g., 30" step="1">
+                    <p class="description">Days to plan inventory needs.</p>
+                </div>
+                <div class="input-group">
+                    <label for="current_stock">Current Stock (units)</label>
+                    <input type="number" id="current_stock" placeholder="e.g., 383.80" step="any">
+                    <p class="description">Your current inventory (defaults to Reorder Point).</p>
+                </div>
+            </div>
+            <button id="projectionButton" onclick="calculateProjections()">Generate Plan</button>
+            <div id="projectionResults"></div>
+            <canvas id="projectionChart"></canvas>
+            <div id="projectionError" class="error"></div>
         </div>
-        <div class="input-group">
-            <label for="operating_days">Operating Days per Year:</label>
-            <p class="description">Days your business sells products annually (e.g., 365 for daily operations).</p>
-            <input type="number" id="operating_days" placeholder="e.g., 365" step="any">
+
+        <div class="card">
+            <h2>Example</h2>
+            <div class="example">
+                <p><strong>Scenario:</strong> A bookstore sells 50 books daily, with 7-day lead time, 90% service level, 365 operating days, ₹1000 ordering cost, ₹200 unit cost.</p>
+                <p><strong>Results:</strong><br>
+                Safety Stock: 33.80 units<br>
+                Reorder Point: 383.80 units<br>
+                Optimal Order Size: 2,738.61 units</p>
+                <p><strong>Planning Example:</strong><br>
+                30 forecast days, 383.80 current stock. Total needed: 1,533.80 units. Reorder ~Day 3, order ~2,738.61 units.</p>
+            </div>
         </div>
-        <div class="input-group">
-            <label for="order_cost">Ordering Cost (₹):</label>
-            <p class="description">Cost to place one order (e.g., paperwork, shipping fees).</p>
-            <input type="number" id="order_cost" placeholder="e.g., 1000" step="any">
+
+        <div class="feedback-section">
+            <button class="feedback-toggle" onclick="openFeedbackModal()">Give Feedback</button>
         </div>
-        <div class="input-group">
-            <label for="unit_cost">Unit Purchase Cost (₹):</label>
-            <p class="description">Cost to buy one unit of your product.</p>
-            <input type="number" id="unit_cost" placeholder="e.g., 200" step="any">
-        </div>
-        <button onclick="calculate()">Calculate</button>
-        <div id="results"></div>
-        <div id="error" class="error"></div>
+        <div id="feedbackSuccess" class="success-message">Thank You! Your Feedback Helps Us Improve StockFlow!</div>
     </div>
 
-    <h2>Example</h2>
-    <div class="example">
-        <p><strong>Scenario:</strong> A bookstore sells an average of 50 books daily. It takes 7 days to receive new stock after ordering. They want Reliable (90%) stock availability to avoid shortages. The store operates 365 days a year, spends ₹1000 per order (admin and shipping), and buys each book for ₹200.</p>
-        <p><strong>Inputs Used:</strong><br>
-        - Average Daily Sales: 50 books (based on daily sales records).<br>
-        - Delivery Time: 7 days (supplier’s delivery schedule).<br>
-        - Stock Reliability: Reliable (90%) (to ensure most customers find books in stock).<br>
-        - Operating Days: 365 (open daily).<br>
-        - Ordering Cost: ₹1000 (staff time, shipping fees).<br>
-        - Unit Purchase Cost: ₹200 (wholesale price per book).</p>
-        <p><strong>Results:</strong><br>
-        Safety Stock: 33.80 units<br>
-        Reorder Point: 383.80 units<br>
-        EOQ: 2,738.61 units</p>
-        <p><strong>Tip:</strong> Use your sales records for Average Daily Sales, check supplier delivery times for Delivery Time, and estimate Ordering Cost from admin/shipping expenses.</p>
-    </div>
-
-    <div class="feedback-section">
-        <button class="feedback-toggle" onclick="toggleFeedbackForm()">Give Feedback</button>
-        <div class="feedback-form" id="feedbackForm">
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeFeedbackModal()">×</span>
+            <h2>Share Your Feedback</h2>
             <div class="input-group">
-                <label for="feedbackName">Name:</label>
+                <label for="feedbackName">Name</label>
                 <input type="text" id="feedbackName" placeholder="e.g., John Doe">
+                <p class="description">Your name for feedback tracking.</p>
             </div>
             <div class="input-group">
-                <label for="feedbackEmail">Email:</label>
+                <label for="feedbackEmail">Email</label>
                 <input type="email" id="feedbackEmail" placeholder="e.g., john@example.com">
+                <p class="description">Your email for follow-ups.</p>
             </div>
             <div class="input-group">
-                <label for="feedbackText">Feedback:</label>
-                <textarea id="feedbackText" placeholder="Share your thoughts on improving the calculator..."></textarea>
+                <label for="feedbackText">Feedback</label>
+                <textarea id="feedbackText" placeholder="Share your thoughts on the calculator, graphs, or projections..."></textarea>
+                <p class="description">Suggestions to improve the tool.</p>
             </div>
             <div class="checkbox-group">
                 <input type="checkbox" id="contactUpdates">
-                <label for="contactUpdates" style="display: inline; font-weight: 400;">Contact me for future updates</label>
+                <label for="contactUpdates" style="font-weight: 400;">Contact me for updates</label>
             </div>
             <button id="submitFeedbackButton" onclick="submitFeedback()">Submit Feedback</button>
             <div id="feedbackError" class="error"></div>
         </div>
-        <div id="feedbackSuccess" class="success-message">Feedback submitted successfully!</div>
     </div>
 
     <script>
-        function safetyStock(avgDemand, leadTime, stdDev, zScore) {
+        let inventoryChart, projectionChart;
+
+        // Calculate Safety Stock: Buffer stock for demand variability
+        function safetyStock(dailySales, leadTime, stdDev, zScore) {
             return zScore * stdDev * Math.sqrt(leadTime);
         }
 
-        function reorderPoint(avgDemand, leadTime, safetyStock) {
-            return (avgDemand * leadTime) + safetyStock;
+        // Calculate Reorder Point: When to reorder stock
+        function reorderPoint(dailySales, leadTime, safetyStock) {
+            return (dailySales * leadTime) + safetyStock;
         }
 
-        function eoq(annualDemand, orderCost, holdCost) {
+        // Calculate Optimal Order Size: Ideal order quantity to minimize costs
+        function optimalOrderSize(annualDemand, orderCost, holdCost) {
             return Math.sqrt((2 * annualDemand * orderCost) / holdCost);
         }
 
@@ -346,53 +392,162 @@
             errorDiv.textContent = '';
             resultsDiv.style.display = 'none';
 
-            const avgDemand = parseFloat(document.getElementById('avg_demand').value);
+            const dailySales = parseFloat(document.getElementById('daily_sales').value);
             const leadTime = parseFloat(document.getElementById('lead_time').value);
-            const zScore = parseFloat(document.getElementById('stock_reliability').value);
+            const zScore = parseFloat(document.getElementById('service_level').value);
             const operatingDays = parseFloat(document.getElementById('operating_days').value);
             const orderCost = parseFloat(document.getElementById('order_cost').value);
             const unitCost = parseFloat(document.getElementById('unit_cost').value);
 
-            if (isNaN(avgDemand) || isNaN(leadTime) || isNaN(zScore) || isNaN(operatingDays) ||
+            if (isNaN(dailySales) || isNaN(leadTime) || isNaN(zScore) || isNaN(operatingDays) ||
                 isNaN(orderCost) || isNaN(unitCost)) {
                 errorDiv.textContent = 'Please enter valid numbers for all fields.';
                 return;
             }
-            if (avgDemand < 0 || leadTime < 0 || operatingDays < 0 || orderCost < 0 || unitCost < 0) {
+            if (dailySales < 0 || leadTime < 0 || operatingDays < 0 || orderCost < 0 || unitCost < 0) {
                 errorDiv.textContent = 'Values cannot be negative.';
                 return;
             }
 
-            const stdDev = avgDemand * 0.2;
-            const annualDemand = avgDemand * operatingDays;
+            const stdDev = dailySales * 0.2;
+            const annualDemand = dailySales * operatingDays;
             const holdCost = unitCost * 0.25;
 
             if (holdCost <= 0) {
-                errorDiv.textContent = 'Unit Purchase Cost must be positive.';
+                errorDiv.textContent = 'Unit Cost must be positive.';
                 return;
             }
 
-            const ss = safetyStock(avgDemand, leadTime, stdDev, zScore);
-            const rop = reorderPoint(avgDemand, leadTime, ss);
-            const orderQty = eoq(annualDemand, orderCost, holdCost);
+            const ss = safetyStock(dailySales, leadTime, stdDev, zScore);
+            const rop = reorderPoint(dailySales, leadTime, ss);
+            const orderQty = optimalOrderSize(annualDemand, orderCost, holdCost);
+
+            // Auto-populate Current Stock with Reorder Point
+            document.getElementById('current_stock').value = rop.toFixed(2);
 
             resultsDiv.innerHTML = `
-                <p><strong>Safety Stock:</strong> ${ss.toFixed(2)} units</p>
-                <p><strong>Reorder Point:</strong> ${rop.toFixed(2)} units</p>
-                <p><strong>EOQ:</strong> ${orderQty.toFixed(2)} units</p>
+                <div><strong>Safety Stock:</strong> ${ss.toFixed(2)} units</div>
+                <div><strong>Reorder Point:</strong> ${rop.toFixed(2)} units</div>
+                <div><strong>Optimal Order Size:</strong> ${orderQty.toFixed(2)} units</div>
             `;
-            resultsDiv.style.display = 'block';
+            resultsDiv.style.display = 'grid';
+
+            // Update inventory chart
+            if (inventoryChart) inventoryChart.destroy();
+            inventoryChart = new Chart(document.getElementById('inventoryChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Safety Stock', 'Reorder Point', 'Optimal Order Size'],
+                    datasets: [{
+                        label: 'Inventory Metrics (units)',
+                        data: [ss, rop, orderQty],
+                        backgroundColor: ['#2b6cb0', '#2c5282', '#4299e1'],
+                        borderColor: ['#1a4971', '#1e3a5f', '#2b6cb0'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Units' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
         }
 
-        function toggleFeedbackForm() {
-            const form = document.getElementById('feedbackForm');
-            form.classList.toggle('active');
+        function calculateProjections() {
+            const errorDiv = document.getElementById('projectionError');
+            const resultsDiv = document.getElementById('projectionResults');
+            const projectionButton = document.getElementById('projectionButton');
+            errorDiv.textContent = '';
+            resultsDiv.style.display = 'none';
+            projectionButton.disabled = true;
+
+            const dailySales = parseFloat(document.getElementById('daily_sales').value);
+            const leadTime = parseFloat(document.getElementById('lead_time').value);
+            const zScore = parseFloat(document.getElementById('service_level').value);
+            const operatingDays = parseFloat(document.getElementById('operating_days').value);
+            const orderCost = parseFloat(document.getElementById('order_cost').value);
+            const unitCost = parseFloat(document.getElementById('unit_cost').value);
+            const forecastDays = parseFloat(document.getElementById('forecast_days').value);
+            const currentStock = parseFloat(document.getElementById('current_stock').value);
+
+            if (isNaN(dailySales) || isNaN(leadTime) || isNaN(zScore) || isNaN(operatingDays) ||
+                isNaN(orderCost) || isNaN(unitCost) || isNaN(forecastDays) || isNaN(currentStock)) {
+                errorDiv.textContent = 'Please enter valid numbers for all fields.';
+                projectionButton.disabled = false;
+                return;
+            }
+            if (dailySales < 0 || leadTime < 0 || operatingDays < 0 || orderCost < 0 || unitCost < 0 ||
+                forecastDays < 1 || currentStock < 0) {
+                errorDiv.textContent = 'Values cannot be negative (Forecast Days ≥ 1).';
+                projectionButton.disabled = false;
+                return;
+            }
+
+            const projectionData = {
+                dailySales,
+                leadTime,
+                zScore,
+                operatingDays,
+                orderCost,
+                unitCost,
+                forecastDays,
+                currentStock
+            };
+
+            // Base64 encode inputs
+            const encodedData = btoa(JSON.stringify(projectionData));
+
+            // Generic console message
+            console.log('Projection request sent.');
+
+            // Single API call
+            fetch('https://script.google.com/macros/s/AKfycbztnVM_IQjd4vHbpakIesiuN3ToKbzNcyQHWUuiXCeOvvQDROgaMDYLm7NVu93fVGyi/exec', {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ encodedData })
+            })
+            .then(() => {
+                errorDiv.textContent = 'Processing...';
+                setTimeout(() => {
+                    errorDiv.textContent = '';
+                    resultsDiv.style.display = 'block';
+                    projectionButton.disabled = false;
+                }, 1000);
+            })
+            .catch((error) => {
+                errorDiv.textContent = 'Failed to generate projections. Try again.';
+                console.error('Error:', error);
+                projectionButton.disabled = false;
+            });
+        }
+
+        function openFeedbackModal() {
+            document.getElementById('feedbackModal').style.display = 'flex';
+            document.getElementById('feedbackError').textContent = '';
             document.getElementById('feedbackSuccess').style.display = 'none';
+        }
+
+        function closeFeedbackModal() {
+            document.getElementById('feedbackModal').style.display = 'none';
+            document.getElementById('feedbackName').value = '';
+            document.getElementById('feedbackEmail').value = '';
+            document.getElementById('feedbackText').value = '';
+            document.getElementById('contactUpdates').checked = false;
         }
 
         function submitFeedback() {
             const submitButton = document.getElementById('submitFeedbackButton');
-            const form = document.getElementById('feedbackForm');
             const name = document.getElementById('feedbackName').value.trim();
             const email = document.getElementById('feedbackEmail').value.trim();
             const feedback = document.getElementById('feedbackText').value.trim();
@@ -416,8 +571,7 @@
                 return;
             }
 
-            // Close the form immediately
-            form.classList.remove('active');
+            closeFeedbackModal();
 
             const feedbackData = {
                 name,
@@ -427,16 +581,13 @@
                 timestamp: new Date().toISOString()
             };
 
-            // Base64 encode to obscure data
             const encodedData = btoa(JSON.stringify(feedbackData));
 
-            // Log generic message to console
-            console.log('Feedback submitted securely. Owner, check your Google Sheet for details.');
+            console.log('Feedback submitted securely.');
 
-            // Send to Google Apps Script web app
             fetch('https://script.google.com/macros/s/AKfycbwRb5mL5c9hivpQiLnrf1ZGHNZpkj3ch8zOg5xInCpbTUzhwOPLvPTTBJL9LnzR-OOZ/exec', {
                 method: 'POST',
-                mode: 'no-cors', // Required for GitHub Pages compatibility
+                mode: 'no-cors',
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -444,17 +595,13 @@
             })
             .then(() => {
                 successDiv.style.display = 'block';
-                document.getElementById('feedbackName').value = '';
-                document.getElementById('feedbackEmail').value = '';
-                document.getElementById('feedbackText').value = '';
-                document.getElementById('contactUpdates').checked = false;
                 setTimeout(() => {
                     successDiv.style.display = 'none';
-                }, 3000);
+                }, 5000);
             })
             .catch((error) => {
-                errorDiv.textContent = 'Failed to submit feedback. Please try again.';
-                form.classList.add('active'); // Reopen form on error
+                errorDiv.textContent = 'Failed to submit feedback. Try again.';
+                openFeedbackModal();
                 console.error('Error:', error);
             })
             .finally(() => {

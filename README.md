@@ -1,1 +1,1 @@
-# inventory-calculator
+# Inventory Calculator

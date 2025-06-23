@@ -1,1 +1,1 @@
-# Inventory Calculator
+# Stockflow Calculator

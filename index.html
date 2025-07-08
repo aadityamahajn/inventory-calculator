@@ -28,7 +28,7 @@
             color: #2b6cb0;
             font-size: 2.2em;
             font-weight: 600;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -38,6 +38,12 @@
         }
         h1 i {
             color: #2b6cb0;
+        }
+        .tool-description {
+            text-align: center;
+            color: #718096;
+            font-size: 0.9em;
+            margin-bottom: 15px;
         }
         .card {
             background-color: #ffffff;
@@ -294,6 +300,7 @@
 <body>
     <div class="container">
         <h1><i class="fas fa-sync-alt"></i> StockSync</h1>
+        <div class="tool-description">A tool to analyze inventory data.</div>
         <div class="card">
             <h2>Data Input</h2>
             <div class="input-section">
@@ -594,13 +601,13 @@
 
             const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSc8oS9zypHSsDpyDW4rmV64JiNClIV4k7_slF-4xeK1DCx0Ug/formResponse';
             const feedbackTypeId = 'entry.919009780';
-            const feedbackTextId = 'entry.1808344821'; // Updated with the correct ID
+            const feedbackTextId = 'entry.1808344821';
 
             const formData = new FormData();
             formData.append(feedbackTypeId, selectedType);
             formData.append(feedbackTextId, feedbackText);
 
-            console.log('Submitting data:', { feedbackType: selectedType, feedbackText }); // Debug log
+            console.log('Submitting data:', { feedbackType: selectedType, feedbackText });
             fetch(formUrl, {
                 method: 'POST',
                 mode: 'no-cors',

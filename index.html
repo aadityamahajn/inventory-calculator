@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StockFlow Calculator</title>
+    <title>StockSync</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -14,706 +14,605 @@
             padding: 15px;
             background-color: #f0f4ff;
             color: #4a5568;
+            position: relative;
+            padding-top: 60px;
+            padding-bottom: 60px;
         }
         .container {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 15px;
         }
         h1 {
             text-align: center;
             color: #2b6cb0;
-            font-size: 2em;
+            font-size: 2.2em;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
+            position: relative;
+            z-index: 10;
         }
         h1 i {
             color: #2b6cb0;
         }
-        h2 {
-            color: #2b6cb0;
-            font-size: 1.4em;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
         .card {
             background-color: #ffffff;
-            padding: 10px;
+            padding: 15px;
             border-radius: 10px;
             border: 1px solid #e2e8f0;
-            opacity: 0;
-            animation: fadeIn 0.5s ease-in forwards;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         }
         .input-section {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 5px;
+            gap: 15px;
+            margin-bottom: 10px;
         }
-        .input-section > .input-group {
-            flex: 1 1 calc(33.33% - 5.33px);
+        .input-group {
+            flex: 1 1 calc(50% - 7.5px);
             min-width: 0;
             display: flex;
             flex-direction: column;
-            margin-bottom: 4px;
-        }
-        .results-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 5px;
-        }
-        .card:nth-child(3) .input-section {
-            margin-bottom: 5px;
-        }
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 4px;
         }
         label {
             font-weight: 600;
-            color: #1a365d; /* Darker blue for labels */
-            font-size: 0.9em;
-            margin-bottom: 4px;
+            color: #1a365d;
+            font-size: 0.95em;
+            margin-bottom: 5px;
         }
         .description {
             font-size: 0.75em;
-            color: #718096; /* Grayish tone for descriptions */
+            color: #718096;
             font-style: italic;
-            margin-top: 2px;
+            margin-top: 3px;
         }
-        input, select, textarea {
-            padding: 8px; /* Increased padding for better touch targets */
-            border: 2px solid #e2e8f0; /* Lighter border */
-            border-radius: 8px; /* Rounded corners */
-            font-size: 0.85em;
-            background-color: #edf2f7; /* Light gray background */
-            color: #2d3748; /* Darker text for contrast */
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        input, select {
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.9em;
+            background-color: #edf2f7;
+            color: #2d3748;
+            transition: border-color 0.3s ease;
         }
-        input:focus, select:focus, textarea:focus {
+        input:focus, select:focus {
             outline: none;
-            border-color: #4a90e2; /* Softer blue on focus */
-            box-shadow: 0 0 8px rgba(74, 144, 226, 0.3); /* Subtle shadow on focus */
+            border-color: #4a90e2;
         }
-        input::placeholder, textarea::placeholder {
+        input::placeholder {
             color: #a0aec0;
             opacity: 0.7;
         }
         button {
-            background: linear-gradient(to right, #4a90e2, #63b3ed); /* Gradient blue */
+            background: linear-gradient(to right, #4a90e2, #63b3ed);
             color: white;
             padding: 10px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 1em;
             font-weight: 600;
-            transition: transform 0.2s, background 0.2s;
+            transition: background 0.2s;
+            width: 100%;
         }
         button:hover {
             background: linear-gradient(to right, #357abd, #4299e1);
-            transform: scale(1.02);
         }
         button:disabled {
             background: #a0aec0;
             cursor: not-allowed;
-            transform: none;
         }
-        #results, #projectionResults {
-            background-color: #f8fafc;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
+        .results-section {
+            margin-top: 15px;
             display: none;
         }
-        .error {
-            color: #e53e3e;
-            font-size: 0.85em;
-            text-align: center;
-            margin-top: 8px;
-        }
-        .about-section {
-            background-color: #e6fffa;
-            padding: 10px;
-            border-radius: 10px;
-            text-align: center;
-            opacity: 0;
-            animation: fadeIn 0.5s ease-in forwards;
-        }
-        .example {
-            background-color: #fffaf0;
-            padding: 10px;
-            border-radius: 10px;
-            border: 1px solid #e6e0d4;
-            margin-top: 8px;
-        }
-        .feedback-section {
-            text-align: center;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background-color: #ffffff;
-            padding: 12px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 400px;
-            position: relative;
-            opacity: 0;
-            animation: fadeIn 0.3s ease-in forwards;
-        }
-        .close {
-            position: absolute;
-            top: 8px;
-            right: 12px;
-            font-size: 1.5em;
-            color: #4a5568;
-            cursor: pointer;
-        }
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        .success-message {
-            display: none;
-            background-color: #e6fffa;
-            color: #2b6cb0;
-            font-size: 1.6em;
-            font-weight: 600;
-            text-align: center;
-            padding: 12px;
-            border-radius: 10px;
-            margin: 8px auto;
-            max-width: 600px;
-            opacity: 0;
-            animation: fadeIn 0.5s ease-in forwards;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        .projection-table {
+        .result-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 8px;
-            font-size: 0.85em;
-            overflow-x: auto;
-            display: block;
+            margin-top: 10px;
         }
-        .projection-table th, .projection-table td {
-            border: 1px solid #d6e0fa;
-            padding: 6px;
-            text-align: left;
+        .result-table th, .result-table td {
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+            text-align: center;
         }
-        .projection-table th {
-            background-color: #2b6cb0;
-            color: white;
-        }
-        .projection-table tr:nth-child(even) {
+        .result-table th {
             background-color: #f8fafc;
+            color: #2b6cb0;
         }
         .chart-container {
             display: flex;
-            flex-direction: row;
             flex-wrap: wrap;
-            gap: 20px;
-            padding: 10px;
+            gap: 15px;
+            margin-top: 15px;
         }
         .chart {
             border: 1px solid #000;
             border-radius: 5px;
             background-color: #ffffff;
-            width: 300px;
-            height: 350px;
+            width: 280px;
+            height: 300px;
             position: relative;
             overflow: hidden;
-            flex: 1 1 300px;
+            flex: 1 1 280px;
         }
         .chart .chart-title {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 600;
             color: #2b6cb0;
             text-align: center;
-            padding: 5px 0;
+            padding: 3px 0;
             background-color: #f8fafc;
             border-bottom: 1px solid #000;
         }
         .chart svg {
             width: 100%;
-            height: 320px;
-            padding: 10px;
+            height: 270px;
+            padding: 5px;
         }
         .chart legend {
-            font-size: 10px;
+            font-size: 9px;
             color: #4a5568;
-            margin-top: 5px;
+            margin-top: 3px;
             text-align: center;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .error {
+            color: #e53e3e;
+            font-size: 0.9em;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .chat-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(to right, #4a90e2, #63b3ed);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: transform 0.2s;
+        }
+        .chat-icon:hover {
+            transform: scale(1.1);
+        }
+        .chat-modal {
+            display: none;
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.2em;
+            color: #718096;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .chat-close:hover {
+            color: #e53e3e;
+        }
+        .chat-header {
+            background: linear-gradient(to right, #4a90e2, #63b3ed);
+            color: white;
+            padding: 10px;
+            font-weight: 600;
+            text-align: center;
+            position: relative;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #f8fafc;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 5px;
+            max-width: 70%;
+        }
+        .bot-message {
+            background-color: #e6f0fa;
+            align-self: flex-start;
+        }
+        .user-message {
+            background-color: #4a90e2;
+            color: white;
+            align-self: flex-end;
+        }
+        .chat-options {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .chat-option {
+            background: #edf2f7;
+            padding: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.2s;
+        }
+        .chat-option:hover {
+            background: #d1e0f5;
+        }
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .chat-input button {
+            width: 70px;
+            padding: 8px;
         }
         @media (max-width: 900px) {
-            body {
-                padding: 10px;
-                max-width: 100%;
-            }
-            h1 {
-                font-size: 1.6em;
-            }
-            .input-section {
-                flex-direction: column;
-            }
-            .input-section > .input-group {
-                flex: 1 1 100%;
-                min-width: 0;
-            }
-            .results-section {
-                grid-template-columns: 1fr;
-            }
-            .card {
-                padding: 8px;
-            }
-            button {
-                padding: 8px;
-            }
-            .success-message {
-                font-size: 1.2em;
-                padding: 10px;
-            }
-            .modal-content {
-                width: 95%;
-                padding: 10px;
-            }
-            .projection-table {
-                font-size: 0.8em;
-            }
-            .chart {
-                width: 100%;
-                height: 300px;
-            }
-            .chart .chart-title {
-                font-size: 12px;
-                padding: 3px 0;
-            }
-            .chart svg {
-                height: 270px;
-                padding: 5px;
-            }
+            body { padding: 10px; max-width: 100%; padding-top: 50px; padding-bottom: 50px; }
+            h1 { font-size: 1.8em; }
+            .input-section { flex-direction: column; }
+            .input-group { flex: 1 1 100%; }
+            .card { padding: 10px; }
+            button { padding: 8px; }
+            .chart { width: 100%; height: 280px; }
+            .chart .chart-title { font-size: 11px; }
+            .chart svg { height: 250px; }
+            .chat-icon { bottom: 10px; right: 10px; width: 40px; height: 40px; font-size: 1.2em; }
+            .chat-modal { width: 90%; right: 5%; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1><i class="fas fa-calculator"></i> StockFlow Calculator</h1>
-        <div class="about-section">
-            <p>Streamline your inventory with StockFlow: optimize stock, plan reorders, and visualize future needs.</p>
-        </div>
+        <h1><i class="fas fa-sync-alt"></i> StockSync</h1>
         <div class="card">
-            <h2>Inventory Inputs</h2>
+            <h2>Data Input</h2>
             <div class="input-section">
                 <div class="input-group">
-                    <label for="daily_sales">Daily Sales (units)</label>
-                    <input type="number" id="daily_sales" placeholder="e.g., 50" step="any">
-                    <p class="description">Units sold per day, from sales records.</p>
+                    <label for="uploadSales">Upload Sales Sheet</label>
+                    <input type="file" id="uploadSales" accept=".csv">
+                    <p class="description">CSV with: stock_id, product_name, sales_amount, sales_date (max 1000 records).</p>
                 </div>
                 <div class="input-group">
-                    <label for="lead_time">Lead Time (days)</label>
-                    <input type="number" id="lead_time" placeholder="e.g., 7" step="any">
-                    <p class="description">Days to receive stock after ordering.</p>
+                    <label for="uploadPurchases">Upload Purchase Sheet</label>
+                    <input type="file" id="uploadPurchases" accept=".csv">
+                    <p class="description">CSV with: stock_id, product_name, purchase_amount, purchase_date (max 1000 records).</p>
                 </div>
                 <div class="input-group">
-                    <label for="service_level">Service Level</label>
-                    <select id="service_level">
+                    <label for="service_reliability">Service Reliability</label>
+                    <select id="service_reliability">
                         <option value="1.65">Very High (95%)</option>
                         <option value="1.28" selected>High (90%)</option>
                         <option value="0.84">Moderate (80%)</option>
                     </select>
-                    <p class="description">Chance of avoiding stock shortages.</p>
+                    <p class="description">Select the desired service reliability level.</p>
                 </div>
                 <div class="input-group">
-                    <label for="operating_days">Operating Days per Year</label>
-                    <input type="number" id="operating_days" placeholder="e.g., 365" step="any">
-                    <p class="description">Days your business sells annually.</p>
-                </div>
-                <div class="input-group">
-                    <label for="order_cost">Cost per Order (e.g., Shipping)</label>
-                    <input type="number" id="order_cost" placeholder="e.g., 1000" step="any">
-                    <p class="description">Total cost to place one order (e.g., shipping, handling fees).</p>
-                </div>
-                <div class="input-group">
-                    <label for="unit_cost">Cost per Unit (e.g., Product Price)</label>
-                    <input type="number" id="unit_cost" placeholder="e.g., 200" step="any">
-                    <p class="description">Cost to purchase a single unit of the product.</p>
+                    <label for="annual_operating_days">Annual Operating Days</label>
+                    <input type="number" id="annual_operating_days" placeholder="e.g., 365" step="any">
+                    <p class="description">Enter the number of days you operate annually.</p>
                 </div>
             </div>
-            <button onclick="calculate()">Calculate</button>
+            <button onclick="calculate()">Analyze Inventory</button>
             <div id="results" class="results-section"></div>
-            <div id="inventoryCharts" class="chart-container"></div>
             <div id="error" class="error"></div>
         </div>
-
-        <div class="card">
-            <h2>Projections and Planning</h2>
-            <div class="input-section">
-                <div class="input-group">
-                    <label for="forecast_days">Forecast Days</label>
-                    <input type="number" id="forecast_days" placeholder="e.g., 30" step="1">
-                    <p class="description">Days to plan inventory needs.</p>
-                </div>
-                <div class="input-group">
-                    <label for="current_stock">Current Stock (units)</label>
-                    <input type="number" id="current_stock" placeholder="e.g., 383.80" step="any">
-                    <p class="description">Your current inventory (defaults to Reorder Point).</p>
-                </div>
-            </div>
-            <button id="projectionButton" onclick="calculateProjections()">Generate Plan</button>
-            <div id="projectionResults"></div>
-            <div id="projectionCharts" class="chart-container"></div>
-            <div id="projectionError" class="error"></div>
-        </div>
-
         <div class="card">
             <h2>Example</h2>
             <div class="example">
-                <p><strong>Scenario:</strong> A bookstore sells 50 books daily, with 7-day lead time, 90% service level, 365 operating days, ₹1000 cost per order, ₹200 cost per unit.</p>
-                <p><strong>Results:</strong><br>
-                Safety Stock: 33.80 units<br>
-                Reorder Point: 383.80 units<br>
-                Optimal Order Size: 2,738.61 units</p>
-                <p><strong>Planning Example:</strong><br>
-                30 forecast days, 383.80 current stock. Total needed: 1,533.80 units. Reorder ~Day 3, order ~2,738.61 units.</p>
+                <p><strong>Sales CSV:</strong><br>stock_id,product_name,sales_amount,sales_date<br>S001,Widget A,5000,2025-06-01<br>S002,Widget B,5500,2025-06-15</p>
+                <p><strong>Purchase CSV:</strong><br>stock_id,product_name,purchase_amount,purchase_date<br>S001,Widget A,4000,2025-06-01<br>S002,Widget B,4500,2025-06-15</p>
             </div>
-        </div>
-
-        <div class="feedback-section">
-            <button class="feedback-toggle" onclick="openFeedbackModal()">Give Feedback</button>
-        </div>
-        <div id="feedbackSuccess" class="success-message">Thank You! Your Feedback Helps Us Improve StockFlow!</div>
-    </div>
-
-    <!-- Feedback Modal -->
-    <div id="feedbackModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeFeedbackModal()">×</span>
-            <h2>Share Your Feedback</h2>
-            <div class="input-group">
-                <label for="feedbackName">Name</label>
-                <input type="text" id="feedbackName" placeholder="e.g., John Doe">
-                <p class="description">Your name for feedback tracking.</p>
-            </div>
-            <div class="input-group">
-                <label for="feedbackEmail">Email</label>
-                <input type="email" id="feedbackEmail" placeholder="e.g., john@example.com">
-                <p class="description">Your email for follow-ups.</p>
-            </div>
-            <div class="input-group">
-                <label for="feedbackText">Feedback</label>
-                <textarea id="feedbackText" placeholder="Share your thoughts on the calculator, charts, or projections..."></textarea>
-                <p class="description">Suggestions to improve the tool.</p>
-            </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="contactUpdates">
-                <label for="contactUpdates" style="font-weight: 400;">Contact me for updates</label>
-            </div>
-            <button id="submitFeedbackButton" onclick="submitFeedback()">Submit Feedback</button>
-            <div id="feedbackError" class="error"></div>
         </div>
     </div>
-
+    <button class="chat-icon" onclick="openFeedbackModal()"><i class="fas fa-comment"></i></button>
+    <div id="feedbackModal" class="chat-modal">
+        <div class="chat-header">
+            StockSync Assistant
+            <span class="chat-close" onclick="closeFeedbackModal()">×</span>
+        </div>
+        <div class="chat-messages" id="feedbackMessages"></div>
+        <div id="feedbackOptions" class="chat-options"></div>
+        <div class="chat-input" id="feedbackInput" style="display: none;">
+            <input type="text" id="feedbackText" placeholder="Enter your feedback...">
+            <button onclick="submitFeedback()">Send</button>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        // Calculate Safety Stock: Buffer stock for demand variability
+        let batchSize = 200;
+
         function safetyStock(dailySales, leadTime, stdDev, zScore) {
-            return zScore * stdDev * Math.sqrt(leadTime);
+            return zScore * stdDev * Math.sqrt(leadTime) || 0;
         }
 
-        // Calculate Reorder Point: When to reorder stock
         function reorderPoint(dailySales, leadTime, safetyStock) {
-            return (dailySales * leadTime) + safetyStock;
+            return (dailySales * leadTime) + safetyStock || 0;
         }
 
-        // Calculate Optimal Order Size: Ideal order quantity to minimize costs
-        function optimalOrderSize(annualDemand, orderCost, holdCost) {
-            return Math.sqrt((2 * annualDemand * orderCost) / holdCost);
+        function optimalOrderSize(annualDemand, orderCost, holdTime) {
+            return Math.sqrt((2 * annualDemand * orderCost) / holdTime) || 0;
+        }
+
+        function processCSVFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const text = e.target.result;
+                    const rows = text.split('\n').map(row => row.split(',').map(cell => cell.trim()));
+                    const headers = rows[0].map(h => h.toLowerCase());
+                    let data = rows.slice(1).filter(row => row.length === headers.length && row.some(cell => cell !== ''));
+
+                    if (data.length > 1000) {
+                        reject(new Error('Upload limit exceeded. Maximum 1000 records allowed.'));
+                        return;
+                    }
+
+                    data = data.map(row => {
+                        const obj = {};
+                        if (headers.includes('stock_id') && headers.includes('product_name')) {
+                            obj['stock_id'] = row[headers.indexOf('stock_id')];
+                            obj['product_name'] = row[headers.indexOf('product_name')];
+                            if (headers.includes('sales_amount') && headers.includes('sales_date')) {
+                                obj['sales_amount'] = parseFloat(row[headers.indexOf('sales_amount')]) || 0;
+                                obj['sales_date'] = row[headers.indexOf('sales_date')];
+                            }
+                            if (headers.includes('purchase_amount') && headers.includes('purchase_date')) {
+                                obj['purchase_amount'] = parseFloat(row[headers.indexOf('purchase_amount')]) || 0;
+                                obj['purchase_date'] = row[headers.indexOf('purchase_date')];
+                            }
+                        }
+                        return obj;
+                    }).filter(obj => obj.stock_id && obj.product_name);
+                    resolve(data);
+                };
+                reader.onerror = () => reject(new Error('Error reading file.'));
+                reader.readAsText(file);
+            });
+        }
+
+        async function preprocessData(salesData, purchaseData) {
+            if (!salesData.length || !purchaseData.length) return null;
+
+            const products = {};
+            const salesDates = salesData.map(item => new Date(item.sales_date)).sort((a, b) => a - b);
+            const daysActive = (salesDates[salesDates.length - 1] - salesDates[0]) / (1000 * 60 * 60 * 24) || 1;
+            const annualOperatingDays = parseFloat(document.getElementById('annual_operating_days').value) || Math.min(365, daysActive);
+            const serviceReliability = parseFloat(document.getElementById('service_reliability').value) || 1.28;
+
+            for (let i = 0; i < salesData.length; i += batchSize) {
+                const batch = salesData.slice(i, i + batchSize);
+                batch.forEach(sale => {
+                    if (sale.stock_id && sale.product_name) {
+                        if (!products[sale.stock_id]) {
+                            products[sale.stock_id] = { name: sale.product_name, sales: [], purchases: [] };
+                        }
+                        if (sale.sales_amount !== undefined) {
+                            products[sale.stock_id].sales.push(sale.sales_amount);
+                        }
+                    }
+                });
+            }
+            for (let i = 0; i < purchaseData.length; i += batchSize) {
+                const batch = purchaseData.slice(i, i + batchSize);
+                batch.forEach(purchase => {
+                    if (purchase.stock_id && purchase.product_name) {
+                        if (!products[purchase.stock_id]) {
+                            products[purchase.stock_id] = { name: purchase.product_name, sales: [], purchases: [] };
+                        }
+                        if (purchase.purchase_amount !== undefined) {
+                            products[purchase.stock_id].purchases.push(purchase.purchase_amount);
+                        }
+                    }
+                });
+            }
+
+            const processedData = {};
+            for (const [stockId, data] of Object.entries(products)) {
+                const totalSales = data.sales.reduce((sum, val) => sum + (val || 0), 0);
+                const dailySales = totalSales / daysActive || 0;
+                const stdDev = data.sales.length > 1 ? Math.sqrt(data.sales.reduce((sum, val) => sum + Math.pow(val - dailySales, 2), 0) / data.sales.length) / Math.sqrt(daysActive) : dailySales * 0.2 || 0;
+                const totalPurchases = data.purchases.reduce((sum, val) => sum + (val || 0), 0);
+                const purchaseDates = purchaseData.filter(p => p.stock_id === stockId).map(p => new Date(p.purchase_date)).sort((a, b) => a - b);
+                const leadTime = purchaseDates.length > 1 ? Math.round((purchaseDates[purchaseDates.length - 1] - purchaseDates[0]) / (1000 * 60 * 60 * 24) / (purchaseDates.length - 1)) : 7 || 0;
+                const orderCost = totalPurchases / data.purchases.length * 0.1 || 100;
+                const unitCost = totalPurchases / totalSales || 200;
+
+                processedData[stockId] = {
+                    product_name: data.name,
+                    daily_sales: dailySales,
+                    lead_time: leadTime,
+                    annual_operating_days: annualOperatingDays,
+                    order_cost: orderCost,
+                    unit_cost: unitCost,
+                    std_dev: stdDev,
+                    service_reliability: serviceReliability
+                };
+            }
+
+            return processedData;
         }
 
         function calculate() {
             const errorDiv = document.getElementById('error');
             const resultsDiv = document.getElementById('results');
-            const chartDiv = document.getElementById('inventoryCharts');
             errorDiv.textContent = '';
             resultsDiv.style.display = 'none';
-            chartDiv.innerHTML = '';
+            resultsDiv.innerHTML = '';
 
-            const dailySales = parseFloat(document.getElementById('daily_sales').value) || 0;
-            const leadTime = parseFloat(document.getElementById('lead_time').value) || 0;
-            const zScore = parseFloat(document.getElementById('service_level').value) || 0;
-            const operatingDays = parseFloat(document.getElementById('operating_days').value) || 0;
-            const orderCost = parseFloat(document.getElementById('order_cost').value) || 0;
-            const unitCost = parseFloat(document.getElementById('unit_cost').value) || 0;
+            const salesFile = document.getElementById('uploadSales').files[0];
+            const purchaseFile = document.getElementById('uploadPurchases').files[0];
 
-            if (dailySales < 0 || leadTime < 0 || operatingDays < 0 || orderCost < 0 || unitCost < 0) {
-                errorDiv.textContent = 'Values cannot be negative.';
+            if (!salesFile || !purchaseFile) {
+                errorDiv.textContent = 'Please upload both sales and purchase sheets.';
                 return;
             }
 
-            const stdDev = dailySales * 0.2;
-            const annualDemand = dailySales * operatingDays;
-            const holdCost = unitCost * 0.25;
-
-            if (holdCost <= 0) {
-                errorDiv.textContent = 'Cost per Unit must be positive.';
-                return;
-            }
-
-            const ss = safetyStock(dailySales, leadTime, stdDev, zScore);
-            const rop = reorderPoint(dailySales, leadTime, ss);
-            const orderQty = optimalOrderSize(annualDemand, orderCost, holdCost);
-
-            document.getElementById('current_stock').value = rop.toFixed(2);
-
-            resultsDiv.innerHTML = `
-                <div><strong>Safety Stock:</strong> ${ss.toFixed(2)} units</div>
-                <div><strong>Reorder Point:</strong> ${rop.toFixed(2)} units</div>
-                <div><strong>Optimal Order Size:</strong> ${orderQty.toFixed(2)} units</div>
-            `;
-            resultsDiv.style.display = 'grid';
-
-            // Generate lightweight SVG charts
-            const zScores = [0.84, 1.28, 1.65];
-            const safetyStocks = zScores.map(z => safetyStock(dailySales, leadTime, stdDev, z));
-            const maxSS = Math.max(...safetyStocks);
-            const leadTimes = [5, 7, 10];
-            const reorderPoints = leadTimes.map(l => reorderPoint(dailySales, l, ss));
-
-            chartDiv.innerHTML = `
-                <div class="chart">
-                    <div class="chart-title">Safety Stock</div>
-                    <svg viewBox="0 0 400 360">
-                        <line x1="50" y1="320" x2="350" y2="320" stroke="#000" stroke-width="1"/>
-                        <line x1="50" y1="40" x2="50" y2="320" stroke="#000" stroke-width="1"/>
-                        ${zScores.map((z, i) => `<g><circle cx="${50 + i * 100}" cy="${320 - (safetyStocks[i] / maxSS * 280)}" r="3" fill="#2b6cb0"/><title>Safety Stock: ${safetyStocks[i].toFixed(2)} units</title></g>`).join('')}
-                        <text x="50" y="275" font-size="10">0.84</text>
-                        <text x="150" y="275" font-size="10">1.28</text>
-                        <text x="250" y="275" font-size="10">1.65</text>
-                        <text x="45" y="150" font-size="10" transform="rotate(-90 45 150)">Stock Units</text>
-                        <text x="200" y="330" font-size="10" text-anchor="middle">Service Level (z-score)</text>
-                    </svg>
-                    <legend>Values by z-score</legend>
-                </div>
-                <div class="chart">
-                    <div class="chart-title">Reorder Point</div>
-                    <svg viewBox="0 0 400 360">
-                        <line x1="50" y1="320" x2="350" y2="320" stroke="#000" stroke-width="1"/>
-                        <line x1="50" y1="40" x2="50" y2="320" stroke="#000" stroke-width="1"/>
-                        ${leadTimes.map((l, i) => `<g><circle cx="${50 + i * 100}" cy="${320 - (reorderPoints[i] / Math.max(...reorderPoints) * 280)}" r="3" fill="#2b6cb0"/><title>Reorder Point: ${reorderPoints[i].toFixed(2)} units</title></g>`).join('')}
-                        <line x1="50" y1="${320 - (reorderPoints[0] / Math.max(...reorderPoints) * 280)}" x2="350" y2="${320 - (reorderPoints[2] / Math.max(...reorderPoints) * 280)}" stroke="#2b6cb0" stroke-width="2"/>
-                        <text x="50" y="275" font-size="10">5</text>
-                        <text x="150" y="275" font-size="10">7</text>
-                        <text x="250" y="275" font-size="10">10</text>
-                        <text x="45" y="150" font-size="10" transform="rotate(-90 45 150)">Stock Units</text>
-                        <text x="200" y="330" font-size="10" text-anchor="middle">Lead Time (days)</text>
-                    </svg>
-                    <legend>Values by Lead Time</legend>
-                </div>
-                <div class="chart">
-                    <div class="chart-title">EOQ vs. Annual Demand</div>
-                    <svg viewBox="0 0 400 360">
-                        <line x1="50" y1="320" x2="350" y2="320" stroke="#000" stroke-width="1"/>
-                        <line x1="50" y1="40" x2="50" y2="320" stroke="#000" stroke-width="1"/>
-                        <g><rect x="50" y="${320 - (annualDemand / Math.max(annualDemand, orderQty) * 280)}" width="150" height="${(annualDemand / Math.max(annualDemand, orderQty) * 280)}" fill="#2b6cb0"/><title>Annual Demand: ${annualDemand.toFixed(2)} units</title></g>
-                        <g><rect x="200" y="${320 - (orderQty / Math.max(annualDemand, orderQty) * 280)}" width="150" height="${(orderQty / Math.max(annualDemand, orderQty) * 280)}" fill="#2b6cb0"/><title>EOQ: ${orderQty.toFixed(2)} units</title></g>
-                        <text x="125" y="275" font-size="10">Demand</text>
-                        <text x="275" y="275" font-size="10">EOQ</text>
-                        <text x="45" y="150" font-size="10" transform="rotate(-90 45 150)">Stock Units</text>
-                        <text x="200" y="330" font-size="10" text-anchor="middle">Category</text>
-                    </svg>
-                    <legend>Bars represent Annual Demand and EOQ</legend>
-                </div>
-            `;
+            Promise.all([processCSVFile(salesFile), processCSVFile(purchaseFile)])
+                .then(async ([salesData, purchaseData]) => {
+                    const processedData = await preprocessData(salesData, purchaseData);
+                    if (!processedData || Object.keys(processedData).length === 0) throw new Error('No valid data to process.');
+                    displayResults(processedData);
+                })
+                .catch(err => {
+                    errorDiv.textContent = err.message;
+                });
         }
 
-        function calculateProjections() {
-            const errorDiv = document.getElementById('projectionError');
-            const resultsDiv = document.getElementById('projectionResults');
-            const chartDiv = document.getElementById('projectionCharts');
-            const projectionButton = document.getElementById('projectionButton');
-            errorDiv.textContent = '';
-            resultsDiv.style.display = 'none';
-            chartDiv.innerHTML = '';
-            projectionButton.disabled = true;
-
-            const dailySales = parseFloat(document.getElementById('daily_sales').value) || 0;
-            const leadTime = parseFloat(document.getElementById('lead_time').value) || 0;
-            const zScore = parseFloat(document.getElementById('service_level').value) || 0;
-            const operatingDays = parseFloat(document.getElementById('operating_days').value) || 0;
-            const orderCost = parseFloat(document.getElementById('order_cost').value) || 0;
-            const unitCost = parseFloat(document.getElementById('unit_cost').value) || 0;
-            const forecastDays = parseFloat(document.getElementById('forecast_days').value) || 0;
-            const currentStock = parseFloat(document.getElementById('current_stock').value) || 0;
-            const dailyDemand = dailySales; // Define dailyDemand to fix reference error
-
-            if (dailySales < 0 || leadTime < 0 || operatingDays < 0 || orderCost < 0 || unitCost < 0 ||
-                forecastDays < 1 || currentStock < 0) {
-                errorDiv.textContent = 'Values cannot be negative (Forecast Days ≥ 1).';
-                projectionButton.disabled = false;
-                return;
-            }
-
-            const stdDev = dailySales * 0.2;
-            const safetyStock = zScore * stdDev * Math.sqrt(leadTime);
-            const reorderPoint = (dailySales * leadTime) + safetyStock;
-            const annualDemand = dailySales * operatingDays;
-            const holdCost = unitCost * 0.25;
-            const optimalOrderSize = Math.sqrt((2 * annualDemand * orderCost) / holdCost);
-
-            const totalDemand = dailyDemand * forecastDays;
-            const totalStockNeeded = totalDemand + safetyStock;
-            let currentStockLevel = currentStock;
-            const plan = [];
-            const stockLevels = [];
-            let day = 0;
-
-            while (day < forecastDays) {
-                day++;
-                currentStockLevel -= dailyDemand;
-                stockLevels.push(currentStockLevel);
-                const reorder = currentStockLevel <= reorderPoint ? 'Yes' : 'No';
-                let orderAmount = 0;
-
-                if (reorder === 'Yes') {
-                    orderAmount = Math.min(optimalOrderSize, totalStockNeeded - currentStockLevel);
-                    currentStockLevel += orderAmount;
-                }
-
-                plan.push({
-                    day: day,
-                    stockLevel: currentStockLevel.toFixed(2),
-                    reorder: reorder,
-                    orderAmount: orderAmount.toFixed(2)
-                });
-            }
-
-            resultsDiv.innerHTML = `
-                <p><strong>Total Stock Needed:</strong> ${totalStockNeeded.toFixed(2)} units</p>
-                <p><strong>Daily Demand:</strong> ${dailyDemand.toFixed(2)} units</p>
-                <table class="projection-table">
-                    <tr><th>Day</th><th>Stock Level</th><th>Reorder</th><th>Order Amount</th></tr>
-                    ${plan.map(row => `<tr><td>${row.day}</td><td>${row.stockLevel}</td><td>${row.reorder}</td><td>${row.orderAmount}</td></tr>`).join('')}
-                </table>
+        function displayResults(processedData) {
+            const resultsDiv = document.getElementById('results');
+            let tableHTML = `
+                <table class="result-table">
+                    <tr>
+                        <th>Stock ID</th>
+                        <th>Product Name</th>
+                        <th>Safety Stock</th>
+                        <th>Reorder Point</th>
+                        <th>Optimal Order Size</th>
+                    </tr>
             `;
+
+            const charts = [];
+            for (const [stockId, data] of Object.entries(processedData)) {
+                const ss = safetyStock(data.daily_sales, data.lead_time, data.std_dev, data.service_reliability);
+                const rop = reorderPoint(data.daily_sales, data.lead_time, ss);
+                const orderQty = optimalOrderSize(data.daily_sales * data.annual_operating_days, data.order_cost, data.unit_cost * 0.25);
+
+                tableHTML += `
+                    <tr>
+                        <td>${stockId}</td>
+                        <td>${data.product_name}</td>
+                        <td>${ss.toFixed(2)}</td>
+                        <td>${rop.toFixed(2)}</td>
+                        <td>${orderQty.toFixed(2)}</td>
+                    </tr>
+                `;
+
+                const maxValue = Math.max(ss, rop, orderQty);
+                charts.push(`
+                    <div class="chart">
+                        <div class="chart-title">Chart for ${data.product_name}</div>
+                        <svg viewBox="0 0 400 360">
+                            <line x1="50" y1="320" x2="350" y2="320" stroke="#000" stroke-width="1"/>
+                            <line x1="50" y1="40" x2="50" y2="320" stroke="#000" stroke-width="1"/>
+                            <g><line x1="100" y1="320" x2="100" y2="${320 - (ss / maxValue * 280)}" stroke="#2b6cb0" stroke-width="2"/><circle cx="100" cy="${320 - (ss / maxValue * 280)}" r="3" fill="#2b6cb0"/><text x="100" y="330" font-size="9" text-anchor="middle">Safety</text></g>
+                            <g><line x1="200" y1="320" x2="200" y2="${320 - (rop / maxValue * 280)}" stroke="#e53e3e" stroke-width="2"/><circle cx="200" cy="${320 - (rop / maxValue * 280)}" r="3" fill="#e53e3e"/><text x="200" y="330" font-size="9" text-anchor="middle">Reorder</text></g>
+                            <g><line x1="300" y1="320" x2="300" y2="${320 - (orderQty / maxValue * 280)}" stroke="#38a169" stroke-width="2"/><circle cx="300" cy="${320 - (orderQty / maxValue * 280)}" r="3" fill="#38a169"/><text x="300" y="330" font-size="9" text-anchor="middle">Order</text></g>
+                            <text x="45" y="150" font-size="9" transform="rotate(-90 45 150)">Units</text>
+                        </svg>
+                        <legend>Guide: Safety (Blue), Reorder (Red), Order (Green) levels</legend>
+                    </div>
+                `);
+            }
+
+            tableHTML += '</table>';
+            resultsDiv.innerHTML = tableHTML + '<div class="chart-container">' + charts.join('') + '</div>';
             resultsDiv.style.display = 'block';
-
-            // Generate lightweight SVG projection chart
-            const maxStock = Math.max(...stockLevels, currentStock);
-            chartDiv.innerHTML = `
-                <div class="chart">
-                    <div class="chart-title">Stock Depletion Trend</div>
-                    <svg viewBox="0 0 400 360">
-                        <line x1="50" y1="320" x2="350" y2="320" stroke="#000" stroke-width="1"/>
-                        <line x1="50" y1="40" x2="50" y2="320" stroke="#000" stroke-width="1"/>
-                        ${stockLevels.map((s, i) => `<g><line x1="${50 + i * (300 / (forecastDays - 1))}" y1="${320 - (s / maxStock * 280)}" x2="${50 + (i + 1) * (300 / (forecastDays - 1))}" y2="${320 - (stockLevels[i + 1] / maxStock * 280) || 320}" stroke="#2b6cb0" stroke-width="2"/><title>Day ${i + 1}: ${s.toFixed(2)} units</title></g>`).slice(0, -1).join('')}
-                        <text x="50" y="275" font-size="10">0</text>
-                        <text x="350" y="275" font-size="10">${forecastDays - 1}</text>
-                        <text x="45" y="150" font-size="10" transform="rotate(-90 45 150)">Stock Units</text>
-                        <text x="200" y="330" font-size="10" text-anchor="middle">Day</text>
-                    </svg>
-                    <legend>Values by Day</legend>
-                </div>
-            `;
-
-            projectionButton.disabled = false;
         }
 
         function openFeedbackModal() {
             document.getElementById('feedbackModal').style.display = 'flex';
-            document.getElementById('feedbackError').textContent = '';
-            document.getElementById('feedbackSuccess').style.display = 'none';
+            document.getElementById('feedbackMessages').innerHTML = '<div class="bot-message">Hello! I’m StockSync Assistant. How can I assist you today? Please select a feedback type.</div>';
+            showFeedbackOptions();
         }
 
         function closeFeedbackModal() {
             document.getElementById('feedbackModal').style.display = 'none';
-            document.getElementById('feedbackName').value = '';
-            document.getElementById('feedbackEmail').value = '';
             document.getElementById('feedbackText').value = '';
-            document.getElementById('contactUpdates').checked = false;
+            document.getElementById('feedbackOptions').style.display = 'block';
+            document.getElementById('feedbackInput').style.display = 'none';
+        }
+
+        function addMessage(text, isUser) {
+            const messagesDiv = document.getElementById('feedbackMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            messageDiv.textContent = text;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function showFeedbackOptions() {
+            const options = ['Feature Feedback', 'Bug Report', 'Suggestion'];
+            const optionsDiv = document.getElementById('feedbackOptions');
+            optionsDiv.innerHTML = '';
+            options.forEach(option => {
+                const button = document.createElement('div');
+                button.className = 'chat-option';
+                button.textContent = option;
+                button.onclick = () => selectFeedbackType(option);
+                optionsDiv.appendChild(button);
+            });
+        }
+
+        function selectFeedbackType(type) {
+            document.getElementById('feedbackOptions').style.display = 'none';
+            document.getElementById('feedbackInput').style.display = 'flex';
+            addMessage(`You selected: ${type}. Please enter your feedback.`, false);
+            document.getElementById('feedbackText').focus();
         }
 
         function submitFeedback() {
-            const submitButton = document.getElementById('submitFeedbackButton');
-            const name = document.getElementById('feedbackName').value.trim();
-            const email = document.getElementById('feedbackEmail').value.trim();
-            const feedback = document.getElementById('feedbackText').value.trim();
-            const contactUpdates = document.getElementById('contactUpdates').checked;
-            const errorDiv = document.getElementById('feedbackError');
-            const successDiv = document.getElementById('feedbackSuccess');
-
-            errorDiv.textContent = '';
-            successDiv.style.display = 'none';
-            submitButton.disabled = true;
-
-            if (!name || !email || !feedback) {
-                errorDiv.textContent = 'Please fill in all fields.';
-                submitButton.disabled = false;
+            const feedbackText = document.getElementById('feedbackText').value.trim();
+            if (!feedbackText) {
+                addMessage('Please enter some feedback before submitting.', false);
                 return;
             }
 
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                errorDiv.textContent = 'Please enter a valid email address.';
-                submitButton.disabled = false;
-                return;
-            }
+            const messages = document.getElementById('feedbackMessages').getElementsByClassName('bot-message');
+            const lastMessage = messages[messages.length - 1]?.textContent;
+            const selectedType = lastMessage ? lastMessage.match(/You selected: (.*)\. Please/)?.[1] : 'Feature Feedback';
 
-            closeFeedbackModal();
+            const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSc8oS9zypHSsDpyDW4rmV64JiNClIV4k7_slF-4xeK1DCx0Ug/formResponse';
+            const feedbackTypeId = 'entry.919009780';
+            const feedbackTextId = 'entry.1808344821'; // Updated with the correct ID
 
-            const feedbackData = {
-                name,
-                email,
-                feedback,
-                contactUpdates,
-                timestamp: new Date().toISOString()
-            };
+            const formData = new FormData();
+            formData.append(feedbackTypeId, selectedType);
+            formData.append(feedbackTextId, feedbackText);
 
-            const encodedData = btoa(JSON.stringify(feedbackData));
-            console.log('Feedback submitted securely.');
-
-            fetch('https://script.google.com/macros/s/AKfycbwRb5mL5c9hivpQiLnrf1ZGHNZpkj3ch8zOg5xInCpbTUzhwOPLvPTTBJL9LnzR-OOZ/exec', {
+            console.log('Submitting data:', { feedbackType: selectedType, feedbackText }); // Debug log
+            fetch(formUrl, {
                 method: 'POST',
                 mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ encodedData })
+                body: formData
             })
             .then(() => {
-                successDiv.style.display = 'block';
-                setTimeout(() => {
-                    successDiv.style.display = 'none';
-                }, 5000);
+                addMessage('Thank you! Your feedback has been submitted.', false);
+                setTimeout(closeFeedbackModal, 2000);
             })
-            .catch((error) => {
-                errorDiv.textContent = 'Failed to submit feedback. Try again.';
-                openFeedbackModal();
-                console.error('Error:', error);
-            })
-            .finally(() => {
-                submitButton.disabled = false;
+            .catch(error => {
+                console.error('Feedback submission error:', error);
+                addMessage('Sorry, there was an issue submitting your feedback. Please try again later.', false);
             });
         }
     </script>

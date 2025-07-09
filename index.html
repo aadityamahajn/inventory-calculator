@@ -279,12 +279,12 @@
                 <div class="input-group">
                     <label for="uploadSales">Upload Sales Sheet</label>
                     <input type="file" id="uploadSales" accept=".csv">
-                    <p class="description">CSV with: stock_id, product_name, sales_amount, sales_date (max 1000 records).</p>
+                    <p class="description">CSV with: stock_id, product_name, sales_amount, sales_date, quantity (max 1000 records).</p>
                 </div>
                 <div class="input-group">
                     <label for="uploadPurchases">Upload Purchase Sheet</label>
                     <input type="file" id="uploadPurchases" accept=".csv">
-                    <p class="description">CSV with: stock_id, product_name, purchase_amount, purchase_date, order_date (max 1000 records).</p>
+                    <p class="description">CSV with: stock_id, product_name, purchase_amount, purchase_date, order_date, quantity (max 1000 records).</p>
                 </div>
                 <div class="input-group">
                     <label for="service_reliability">Service Reliability</label>
@@ -308,8 +308,8 @@
         <div class="card">
             <h2>Example</h2>
             <div class="example">
-                <p><strong>Sales CSV:</strong><br>product_name,sales_date,stock_id,sales_amount<br>Widget A,2025-06-01,S001,5000<br>Widget B,2025-06-15,S002,5500</p>
-                <p><strong>Purchase CSV:</strong><br>order_date,stock_id,purchase_date,product_name,purchase_amount<br>2025-05-25,S001,2025-06-01,Widget A,4000<br>2025-06-01,S002,2025-06-15,Widget B,4500</p>
+                <p><strong>Sales CSV:</strong><br>product_name,sales_date,stock_id,sales_amount,quantity<br>Widget A,2025-06-01,S001,5000,10<br>Widget B,2025-06-15,S002,5500,15</p>
+                <p><strong>Purchase CSV:</strong><br>order_date,stock_id,purchase_date,product_name,purchase_amount,quantity<br>2025-05-25,S001,2025-06-01,Widget A,4000,8<br>2025-06-01,S002,2025-06-15,Widget B,4500,12</p>
             </div>
         </div>
     </div>
@@ -338,8 +338,8 @@
             return (dailySales * leadTime) + safetyStock || 0;
         }
 
-        function optimalOrderSize(annualDemand, orderCost, holdTime) {
-            return Math.sqrt((2 * annualDemand * orderCost) / holdTime) || 0;
+        function optimalOrderSize(annualDemand, orderCost, holdTime, quantity) {
+            return Math.sqrt((2 * annualDemand * orderCost) / (holdTime * quantity)) || 0;
         }
 
         function processCSVFile(file) {
@@ -363,14 +363,16 @@
                         if (stockIdIdx !== -1 && productNameIdx !== -1) {
                             obj['stock_id'] = row[stockIdIdx];
                             obj['product_name'] = row[productNameIdx];
-                            if (headers.includes('sales_amount') && headers.includes('sales_date')) {
+                            if (headers.includes('sales_amount') && headers.includes('sales_date') && headers.includes('quantity')) {
                                 obj['sales_amount'] = headers.indexOf('sales_amount') !== -1 ? parseFloat(row[headers.indexOf('sales_amount')]) || 0 : 0;
                                 obj['sales_date'] = headers.indexOf('sales_date') !== -1 ? row[headers.indexOf('sales_date')] : '';
+                                obj['quantity'] = headers.indexOf('quantity') !== -1 ? parseInt(row[headers.indexOf('quantity')]) || 0 : 0;
                             }
-                            if (headers.includes('purchase_amount') && headers.includes('purchase_date') && headers.includes('order_date')) {
+                            if (headers.includes('purchase_amount') && headers.includes('purchase_date') && headers.includes('order_date') && headers.includes('quantity')) {
                                 obj['purchase_amount'] = headers.indexOf('purchase_amount') !== -1 ? parseFloat(row[headers.indexOf('purchase_amount')]) || 0 : 0;
                                 obj['purchase_date'] = headers.indexOf('purchase_date') !== -1 ? row[headers.indexOf('purchase_date')] : '';
                                 obj['order_date'] = headers.indexOf('order_date') !== -1 ? row[headers.indexOf('order_date')] : '';
+                                obj['quantity'] = headers.indexOf('quantity') !== -1 ? parseInt(row[headers.indexOf('quantity')]) || 0 : 0;
                             }
                         }
                         return obj;
@@ -396,10 +398,11 @@
                 batch.forEach(sale => {
                     if (sale.stock_id && sale.product_name) {
                         if (!products[sale.stock_id]) {
-                            products[sale.stock_id] = { name: sale.product_name, sales: [], purchases: [] };
+                            products[sale.stock_id] = { name: sale.product_name, sales: [], quantities: [], purchases: [], purchaseQuantities: [] };
                         }
-                        if (sale.sales_amount !== undefined) {
+                        if (sale.sales_amount !== undefined && sale.quantity !== undefined) {
                             products[sale.stock_id].sales.push(sale.sales_amount);
+                            products[sale.stock_id].quantities.push(sale.quantity);
                         }
                     }
                 });
@@ -409,10 +412,11 @@
                 batch.forEach(purchase => {
                     if (purchase.stock_id && purchase.product_name) {
                         if (!products[purchase.stock_id]) {
-                            products[purchase.stock_id] = { name: purchase.product_name, sales: [], purchases: [] };
+                            products[purchase.stock_id] = { name: purchase.product_name, sales: [], quantities: [], purchases: [], purchaseQuantities: [] };
                         }
-                        if (purchase.purchase_amount !== undefined) {
+                        if (purchase.purchase_amount !== undefined && purchase.quantity !== undefined) {
                             products[purchase.stock_id].purchases.push(purchase.purchase_amount);
+                            products[purchase.stock_id].purchaseQuantities.push(purchase.quantity);
                         }
                     }
                 });
@@ -420,19 +424,21 @@
 
             const processedData = {};
             for (const [stockId, data] of Object.entries(products)) {
-                const totalSales = data.sales.reduce((sum, val) => sum + (val || 0), 0);
-                const dailySales = totalSales / daysActive || 0;
-                const stdDev = data.sales.length > 1 ? Math.sqrt(data.sales.reduce((sum, val) => sum + Math.pow(val - dailySales, 2), 0) / data.sales.length) / Math.sqrt(daysActive) : dailySales * 0.2 || 0;
-                const totalPurchases = data.purchases.reduce((sum, val) => sum + (val || 0), 0);
+                const totalSalesValue = data.sales.reduce((sum, val, idx) => sum + (val * data.quantities[idx] || 0), 0);
+                const totalQuantities = data.quantities.reduce((sum, val) => sum + val, 0) || 1;
+                const dailySales = totalSalesValue / (daysActive * totalQuantities) || 0;
+                const stdDev = data.quantities.length > 1 ? Math.sqrt(data.quantities.map((q, idx) => Math.pow(data.sales[idx] * q - dailySales, 2)).reduce((sum, val) => sum + val, 0) / data.quantities.length) / Math.sqrt(daysActive) : dailySales * 0.2 || 0;
+                const totalPurchaseValue = data.purchases.reduce((sum, val, idx) => sum + (val * data.purchaseQuantities[idx] || 0), 0);
+                const totalPurchaseQuantities = data.purchaseQuantities.reduce((sum, val) => sum + val, 0) || 1;
                 const purchaseRecords = purchaseData.filter(p => p.stock_id === stockId);
                 const leadTimes = purchaseRecords.map(p => {
                     const orderDate = new Date(p.order_date);
                     const purchaseDate = new Date(p.purchase_date);
-                    return (purchaseDate - orderDate) / (1000 * 60 * 60 * 24); // Difference in days
+                    return (purchaseDate - orderDate) / (1000 * 60 * 60 * 24);
                 }).filter(lt => !isNaN(lt) && lt >= 0);
-                const leadTime = leadTimes.length > 0 ? Math.round(leadTimes.reduce((sum, lt) => sum + lt, 0) / leadTimes.length) : 7; // Average lead time or default to 7
-                const orderCost = totalPurchases / data.purchases.length * 0.1 || 100;
-                const unitCost = totalPurchases / totalSales || 200;
+                const leadTime = leadTimes.length > 0 ? Math.round(leadTimes.reduce((sum, lt) => sum + lt, 0) / leadTimes.length) : 7;
+                const orderCost = (totalPurchaseValue / totalPurchaseQuantities) * 0.1 || 100;
+                const unitCost = (totalPurchaseValue / totalSalesValue) || 200;
 
                 processedData[stockId] = {
                     product_name: data.name,
@@ -442,7 +448,8 @@
                     order_cost: orderCost,
                     unit_cost: unitCost,
                     std_dev: stdDev,
-                    service_reliability: serviceReliability
+                    service_reliability: serviceReliability,
+                    avg_quantity: totalQuantities / data.quantities.length || 1
                 };
             }
 
@@ -492,9 +499,9 @@
             for (const [stockId, data] of Object.entries(processedData)) {
                 const ss = safetyStock(data.daily_sales, data.lead_time, data.std_dev, data.service_reliability);
                 const rop = reorderPoint(data.daily_sales, data.lead_time, ss);
-                const orderQty = optimalOrderSize(data.daily_sales * data.annual_operating_days, data.order_cost, data.unit_cost * 0.25);
+                const orderQty = optimalOrderSize(data.daily_sales * data.annual_operating_days, data.order_cost, data.unit_cost * 0.25, data.avg_quantity);
                 const maxValue = Math.max(ss, rop, orderQty);
-                const scaleFactor = 300 / maxValue; // Scale to fit within 300px width
+                const scaleFactor = 300 / maxValue;
 
                 tableHTML += `
                     <tr>
@@ -517,11 +524,11 @@
                                     <circle cx="0" cy="0" r="3" fill="#2b6cb0"/>
                                     <text x="5" y="5" font-size="8">Safety</text>
                                     <circle cx="40" cy="0" r="3" fill="#e53e3e"/>
-            <text x="45" y="5" font-size="8">Reorder</text>
-            <circle cx="80" cy="0" r="3" fill="#38a169"/>
-            <text x="85" y="5" font-size="8">Order</text>
-        </g>
-    </svg>
+                                    <text x="45" y="5" font-size="8">Reorder</text>
+                                    <circle cx="80" cy="0" r="3" fill="#38a169"/>
+                                    <text x="85" y="5" font-size="8">Order</text>
+                                </g>
+                            </svg>
                         </td>
                     </tr>
                 `;

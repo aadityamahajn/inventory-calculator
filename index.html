@@ -15,7 +15,7 @@
             background-color: #f0f4ff;
             color: #4a5568;
             position: relative;
-            padding-top: 60px;
+            padding-top: 40px;
             padding-bottom: 60px;
         }
         .container {
@@ -26,24 +26,25 @@
         h1 {
             text-align: center;
             color: #2b6cb0;
-            font-size: 2.2em;
+            font-size: 1.8em;
             font-weight: 600;
-            margin-bottom: 5px;
+            margin: 5px 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 5px;
             position: relative;
             z-index: 10;
         }
         h1 i {
             color: #2b6cb0;
+            font-size: 1.2em;
         }
         .tool-description {
             text-align: center;
             color: #718096;
-            font-size: 0.9em;
-            margin-bottom: 15px;
+            font-size: 0.85em;
+            margin-bottom: 10px;
         }
         .card {
             background-color: #ffffff;
@@ -121,23 +122,38 @@
             border-collapse: collapse;
             margin-top: 10px;
         }
-        .result-table th, .result-table td {
+        .result-table th {
+            background: linear-gradient(to right, #f0f4ff, #e6f0fa);
+            color: #2b6cb0;
+            padding: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .result-table td {
             border: 1px solid #e2e8f0;
             padding: 8px;
             text-align: center;
             vertical-align: middle;
-        }
-        .result-table th {
-            background-color: #f8fafc;
-            color: #2b6cb0;
+            transition: background-color 0.3s;
         }
         .result-table td.chart-cell {
-            width: 400px;
+            width: 300px;
             padding: 2px;
+        }
+        .result-table .green {
+            background: linear-gradient(to right, #edf7ed, #c6f6d5);
+            color: #2f855a;
+        }
+        .result-table .yellow {
+            background: linear-gradient(to right, #fefcbf, #faf089);
+            color: #975a16;
+        }
+        .result-table .red {
+            background: linear-gradient(to right, #fed7d7, #feb2b2);
+            color: #c53030;
         }
         .chart-cell svg {
             width: 100%;
-            height: 150px;
+            height: 120px;
         }
         .error {
             color: #e53e3e;
@@ -165,6 +181,26 @@
         }
         .chat-icon:hover {
             transform: scale(1.1);
+        }
+        .feedback-popup {
+            display: none;
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 200px;
+            padding: 10px;
+            background-color: #ffffff;
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            text-align: center;
+            font-size: 0.9em;
+            color: #2d3748;
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .chat-modal {
             display: none;
@@ -256,20 +292,21 @@
             padding: 8px;
         }
         @media (max-width: 900px) {
-            body { padding: 10px; max-width: 100%; padding-top: 50px; padding-bottom: 50px; }
-            h1 { font-size: 1.8em; }
+            body { padding: 10px; max-width: 100%; padding-top: 30px; padding-bottom: 50px; }
+            h1 { font-size: 1.5em; }
             .input-section { flex-direction: column; }
             .input-group { flex: 1 1 100%; }
             .card { padding: 10px; }
             button { padding: 8px; }
-            .result-table td.chart-cell { width: 300px; }
-            .chart-cell svg { height: 120px; }
+            .result-table td.chart-cell { width: 250px; }
+            .chart-cell svg { height: 100px; }
             .chat-icon { bottom: 10px; right: 10px; width: 40px; height: 40px; font-size: 1.2em; }
+            .feedback-popup { width: 180px; bottom: 70px; right: 10px; }
             .chat-modal { width: 90%; right: 5%; }
         }
     </style>
 </head>
-<body>
+<body onload="showFeedbackPopup()">
     <div class="container">
         <h1><i class="fas fa-sync-alt"></i> StockSync</h1>
         <div class="tool-description">A tool to analyze inventory data.</div>
@@ -306,14 +343,56 @@
             <div id="error" class="error"></div>
         </div>
         <div class="card">
-            <h2>Example</h2>
+            <h2>Example Workflow & Output</h2>
             <div class="example">
-                <p><strong>Sales CSV:</strong><br>product_name,sales_date,stock_id,sales_amount,quantity<br>Widget A,2025-06-01,S001,5000,10<br>Widget B,2025-06-15,S002,5500,15</p>
-                <p><strong>Purchase CSV:</strong><br>order_date,stock_id,purchase_date,product_name,purchase_amount,quantity<br>2025-05-25,S001,2025-06-01,Widget A,4000,8<br>2025-06-01,S002,2025-06-15,Widget B,4500,12</p>
+                <h3>Sample Input</h3>
+                <p><strong>Sales CSV:</strong><br>stock_id,product_name,sales_amount,sales_date,quantity<br>S001,Widget A,5000,2025-06-01,10<br>S002,Widget B,5500,2025-06-15,15</p>
+                <p><strong>Purchase CSV:</strong><br>stock_id,product_name,purchase_amount,purchase_date,order_date,quantity<br>S001,Widget A,4000,2025-06-01,2025-05-25,8<br>S002,Widget B,4500,2025-06-15,2025-06-01,12</p>
+                <p><strong>Inputs:</strong><br>Service Reliability: High (90%), Annual Operating Days: 365</p>
+
+                <h3>Expected Output</h3>
+                <p>After analyzing, users will see a table like:</p>
+                <table class="result-table">
+                    <tr>
+                        <th>Stock ID</th>
+                        <th>Product Name</th>
+                        <th>When to Reorder</th>
+                        <th>Extra Stock Buffer</th>
+                        <th>Best Order Amount</th>
+                        <th>Chart</th>
+                    </tr>
+                    <tr>
+                        <td>S001</td>
+                        <td>Widget A</td>
+                        <td class="yellow">45.32<br>Order soon to avoid shortages.</td>
+                        <td class="green">12.75<br>Safe buffer, no immediate concern.</td>
+                        <td class="yellow">18.90<br>Review order size for efficiency.</td>
+                        <td class="chart-cell">[Chart visualizing values]</td>
+                    </tr>
+                    <tr>
+                        <td>S002</td>
+                        <td>Widget B</td>
+                        <td class="green">60.15<br>No rush, stock is sufficient.</td>
+                        <td class="yellow">15.20<br>Consider increasing buffer for risks.</td>
+                        <td class="green">25.50<br>Ideal order size for cost savings.</td>
+                        <td class="chart-cell">[Chart visualizing values]</td>
+                    </tr>
+                </table>
+                <p><em>Note: Colors (green, yellow, red) indicate status: green for optimal, yellow for caution, red for urgent action.</em></p>
+
+                <h3>Considerations for Better Results</h3>
+                <ul>
+                    <li><strong>Complete Data:</strong> Ensure all fields (stock_id, product_name, amounts, dates, quantities) are filled to avoid gaps in analysis.</li>
+                    <li><strong>Accurate Dates:</strong> Use consistent date formats (e.g., YYYY-MM-DD) for reliable lead time and trend calculations.</li>
+                    <li><strong>Realistic Inputs:</strong> Set Annual Operating Days based on your actual business calendar for precise order sizing.</li>
+                    <li><strong>Recent Data:</strong> Upload the latest sales and purchase records (within 3-6 months) for current demand patterns.</li>
+                    <li><strong>Check Variability:</strong> High lead time or sales fluctuations may require adjusting Service Reliability to a higher level (e.g., 95%).</li>
+                </ul>
             </div>
         </div>
     </div>
     <button class="chat-icon" onclick="openFeedbackModal()"><i class="fas fa-comment"></i></button>
+    <div id="feedbackPopup" class="feedback-popup">Click the chat icon to share your feedback!</div>
     <div id="feedbackModal" class="chat-modal">
         <div class="chat-header">
             StockSync Assistant
@@ -390,7 +469,7 @@
             const products = {};
             const salesDates = salesData.map(item => new Date(item.sales_date)).sort((a, b) => a - b);
             const daysActive = (salesDates[salesDates.length - 1] - salesDates[0]) / (1000 * 60 * 60 * 24) || 1;
-            const annualOperatingDays = parseFloat(document.getElementById('annual_operating_days').value) || Math.min(365, daysActive);
+            const annualOperatingDays = parseFloat(document.getElementById('annual_operating_days').value) || 365;
             const serviceReliability = parseFloat(document.getElementById('service_reliability').value) || 1.28;
 
             for (let i = 0; i < salesData.length; i += batchSize) {
@@ -428,7 +507,7 @@
                 const totalQuantities = data.quantities.reduce((sum, val) => sum + val, 0) || 1;
                 const dailySales = totalSalesValue / (daysActive * totalQuantities) || 0;
                 const stdDev = data.quantities.length > 1 ? Math.sqrt(data.quantities.map((q, idx) => Math.pow(data.sales[idx] * q - dailySales, 2)).reduce((sum, val) => sum + val, 0) / data.quantities.length) / Math.sqrt(daysActive) : dailySales * 0.2 || 0;
-                const totalPurchaseValue = data.purchases.reduce((sum, val, idx) => sum + (val * data.purchaseQuantities[idx] || 0), 0);
+                const totalPurchasesValue = data.purchases.reduce((sum, val, idx) => sum + (val * data.purchaseQuantities[idx] || 0), 0);
                 const totalPurchaseQuantities = data.purchaseQuantities.reduce((sum, val) => sum + val, 0) || 1;
                 const purchaseRecords = purchaseData.filter(p => p.stock_id === stockId);
                 const leadTimes = purchaseRecords.map(p => {
@@ -437,8 +516,22 @@
                     return (purchaseDate - orderDate) / (1000 * 60 * 60 * 24);
                 }).filter(lt => !isNaN(lt) && lt >= 0);
                 const leadTime = leadTimes.length > 0 ? Math.round(leadTimes.reduce((sum, lt) => sum + lt, 0) / leadTimes.length) : 7;
-                const orderCost = (totalPurchaseValue / totalPurchaseQuantities) * 0.1 || 100;
-                const unitCost = (totalPurchaseValue / totalSalesValue) || 200;
+                const orderCost = (totalPurchasesValue / totalPurchaseQuantities) * 0.1 || 100;
+                const unitCost = (totalPurchasesValue / totalSalesValue) || 200;
+                const avgQuantity = totalQuantities / data.quantities.length || 1;
+
+                // Pattern Recognition: Sales trend
+                const salesTrend = data.sales.length > 3 ? (data.sales[data.sales.length - 1] - data.sales[0]) / data.sales.length : 0;
+                const isSpiking = salesTrend > (dailySales * 0.5);
+
+                // Price Analysis: Margin trend
+                const avgPurchasePrice = totalPurchasesValue / totalPurchaseQuantities;
+                const avgSalesPrice = totalSalesValue / totalQuantities;
+                const priceTrend = avgSalesPrice > avgPurchasePrice ? 'positive' : 'negative';
+
+                // Risk Analysis: Lead time variability
+                const leadTimeVar = leadTimes.length > 1 ? Math.sqrt(leadTimes.reduce((sum, lt) => sum + Math.pow(lt - leadTime, 2), 0) / leadTimes.length) : 0;
+                const riskScore = leadTimeVar > leadTime * 0.2 ? 'high' : leadTimeVar > leadTime * 0.1 ? 'moderate' : 'low';
 
                 processedData[stockId] = {
                     product_name: data.name,
@@ -449,7 +542,11 @@
                     unit_cost: unitCost,
                     std_dev: stdDev,
                     service_reliability: serviceReliability,
-                    avg_quantity: totalQuantities / data.quantities.length || 1
+                    avg_quantity: avgQuantity,
+                    sales_trend: salesTrend,
+                    price_trend: priceTrend,
+                    risk_score: riskScore,
+                    is_spiking: isSpiking
                 };
             }
 
@@ -489,9 +586,9 @@
                     <tr>
                         <th>Stock ID</th>
                         <th>Product Name</th>
-                        <th>Safety Stock</th>
-                        <th>Reorder Point</th>
-                        <th>Optimal Order Size</th>
+                        <th>When to Reorder</th>
+                        <th>Extra Stock Buffer</th>
+                        <th>Best Order Amount</th>
                         <th>Chart</th>
                     </tr>
             `;
@@ -501,33 +598,37 @@
                 const rop = reorderPoint(data.daily_sales, data.lead_time, ss);
                 const orderQty = optimalOrderSize(data.daily_sales * data.annual_operating_days, data.order_cost, data.unit_cost * 0.25, data.avg_quantity);
                 const maxValue = Math.max(ss, rop, orderQty);
-                const scaleFactor = 300 / maxValue;
+                const scaleFactor = 250 / maxValue;
+
+                // Status Colors
+                const reorderStatus = rop > data.daily_sales * 2 ? 'green' : rop > data.daily_sales ? 'yellow' : 'red';
+                const extraStatus = ss > data.std_dev * 2 ? 'green' : ss > data.std_dev ? 'yellow' : 'red';
+                const orderStatus = orderQty > data.avg_quantity * 1.5 ? 'green' : orderQty > data.avg_quantity ? 'yellow' : 'red';
+
+                // Insights
+                const reorderInsight = rop > data.daily_sales * 2 ? 'No rush, stock is sufficient.' : 'Order soon to avoid shortages.';
+                const extraInsight = ss > data.std_dev * 2 ? 'Safe buffer, no immediate concern.' : 'Consider increasing buffer for risks.';
+                const orderInsight = orderQty > data.avg_quantity * 1.5 ? 'Ideal order size for cost savings.' : 'Review order size for efficiency.';
+                const patternInsight = data.is_spiking ? 'Demand is up—plan for more stock.' : 'Demand is steady.';
+                const priceInsight = data.price_trend === 'positive' ? 'Healthy profit margin.' : 'Check pricing strategy.';
+                const riskInsight = data.risk_score === 'low' ? 'Low stockout risk.' : data.risk_score === 'moderate' ? 'Moderate risk, monitor closely.' : 'High risk, act now.';
 
                 tableHTML += `
                     <tr>
                         <td>${stockId}</td>
                         <td>${data.product_name}</td>
-                        <td>${ss.toFixed(2)}</td>
-                        <td>${rop.toFixed(2)}</td>
-                        <td>${orderQty.toFixed(2)}</td>
+                        <td class="${reorderStatus}"><span class="status">${rop.toFixed(2)}</span><br>${reorderInsight}</td>
+                        <td class="${extraStatus}"><span class="status">${ss.toFixed(2)}</span><br>${extraInsight}</td>
+                        <td class="${orderStatus}"><span class="status">${orderQty.toFixed(2)}</span><br>${orderInsight}</td>
                         <td class="chart-cell">
-                            <svg viewBox="0 0 400 150">
-                                <line x1="50" y1="130" x2="350" y2="130" stroke="#000" stroke-width="1"/> <!-- X-axis -->
-                                <line x1="50" y1="20" x2="50" y2="130" stroke="#000" stroke-width="1"/> <!-- Y-axis -->
-                                <g><line x1="50" y1="110" x2="${50 + (ss * scaleFactor)}" y2="110" stroke="#2b6cb0" stroke-width="2"/><circle cx="${50 + (ss * scaleFactor)}" cy="110" r="3" fill="#2b6cb0"/><text x="${50 + (ss * scaleFactor) / 2}" y="120" font-size="8" text-anchor="middle">S:${ss.toFixed(2)}</text></g>
-                                <g><line x1="50" y1="70" x2="${50 + (rop * scaleFactor)}" y2="70" stroke="#e53e3e" stroke-width="2"/><circle cx="${50 + (rop * scaleFactor)}" cy="70" r="3" fill="#e53e3e"/><text x="${50 + (rop * scaleFactor) / 2}" y="80" font-size="8" text-anchor="middle">R:${rop.toFixed(2)}</text></g>
-                                <g><line x1="50" y1="30" x2="${50 + (orderQty * scaleFactor)}" y2="30" stroke="#38a169" stroke-width="2"/><circle cx="${50 + (orderQty * scaleFactor)}" cy="30" r="3" fill="#38a169"/><text x="${50 + (orderQty * scaleFactor) / 2}" y="40" font-size="8" text-anchor="middle">O:${orderQty.toFixed(2)}</text></g>
-                                <text x="350" y="135" font-size="8" text-anchor="end">${maxValue.toFixed(2)}</text> <!-- Max value label -->
-                                <text x="25" y="75" font-size="8" text-anchor="middle" transform="rotate(-90 25 75)">Metrics</text>
-                                <text x="200" y="145" font-size="8" text-anchor="middle">Units</text>
-                                <g transform="translate(50, 140)">
-                                    <circle cx="0" cy="0" r="3" fill="#2b6cb0"/>
-                                    <text x="5" y="5" font-size="8">Safety</text>
-                                    <circle cx="40" cy="0" r="3" fill="#e53e3e"/>
-                                    <text x="45" y="5" font-size="8">Reorder</text>
-                                    <circle cx="80" cy="0" r="3" fill="#38a169"/>
-                                    <text x="85" y="5" font-size="8">Order</text>
-                                </g>
+                            <svg viewBox="0 0 300 120">
+                                <line x1="20" y1="100" x2="270" y2="100" stroke="#000" stroke-width="1"/>
+                                <line x1="20" y1="20" x2="20" y2="100" stroke="#000" stroke-width="1"/>
+                                <line x1="20" y1="80" x2="${20 + (rop * scaleFactor)}" y2="80" stroke="#2b6cb0" stroke-width="2"/>
+                                <line x1="20" y1="50" x2="${20 + (ss * scaleFactor)}" y2="50" stroke="#38a169" stroke-width="2"/>
+                                <line x1="20" y1="20" x2="${20 + (orderQty * scaleFactor)}" y2="20" stroke="#e53e3e" stroke-width="2"/>
+                                <text x="270" y="105" font-size="8">${maxValue.toFixed(2)}</text>
+                                <text x="10" y="50" font-size="8" transform="rotate(-90 10 50)">Units</text>
                             </svg>
                         </td>
                     </tr>
@@ -535,6 +636,7 @@
             }
 
             tableHTML += '</table>';
+
             resultsDiv.innerHTML = tableHTML;
             resultsDiv.style.display = 'block';
         }
@@ -543,6 +645,7 @@
             document.getElementById('feedbackModal').style.display = 'flex';
             document.getElementById('feedbackMessages').innerHTML = '<div class="bot-message">Hello! I’m StockSync Assistant. How can I assist you today? Please select a feedback type.</div>';
             showFeedbackOptions();
+            document.getElementById('feedbackPopup').style.display = 'none'; // Hide popup when modal opens
         }
 
         function closeFeedbackModal() {
@@ -614,6 +717,14 @@
                 console.error('Feedback submission error:', error);
                 addMessage('Sorry, there was an issue submitting your feedback. Please try again later.', false);
             });
+        }
+
+        function showFeedbackPopup() {
+            const popup = document.getElementById('feedbackPopup');
+            popup.style.display = 'block';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 5000); // Auto-hide after 5 seconds
         }
     </script>
 </body>

@@ -125,46 +125,19 @@
             border: 1px solid #e2e8f0;
             padding: 8px;
             text-align: center;
+            vertical-align: middle;
         }
         .result-table th {
             background-color: #f8fafc;
             color: #2b6cb0;
         }
-        .chart-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 15px;
+        .result-table td.chart-cell {
+            width: 400px;
+            padding: 2px;
         }
-        .chart {
-            border: 1px solid #000;
-            border-radius: 5px;
-            background-color: #ffffff;
-            width: 280px;
-            height: 300px;
-            position: relative;
-            overflow: hidden;
-            flex: 1 1 280px;
-        }
-        .chart .chart-title {
-            font-size: 12px;
-            font-weight: 600;
-            color: #2b6cb0;
-            text-align: center;
-            padding: 3px 0;
-            background-color: #f8fafc;
-            border-bottom: 1px solid #000;
-        }
-        .chart svg {
+        .chart-cell svg {
             width: 100%;
-            height: 270px;
-            padding: 5px;
-        }
-        .chart legend {
-            font-size: 9px;
-            color: #4a5568;
-            margin-top: 3px;
-            text-align: center;
+            height: 150px;
         }
         .error {
             color: #e53e3e;
@@ -289,9 +262,8 @@
             .input-group { flex: 1 1 100%; }
             .card { padding: 10px; }
             button { padding: 8px; }
-            .chart { width: 100%; height: 280px; }
-            .chart .chart-title { font-size: 11px; }
-            .chart svg { height: 250px; }
+            .result-table td.chart-cell { width: 300px; }
+            .chart-cell svg { height: 120px; }
             .chat-icon { bottom: 10px; right: 10px; width: 40px; height: 40px; font-size: 1.2em; }
             .chat-modal { width: 90%; right: 5%; }
         }
@@ -312,7 +284,7 @@
                 <div class="input-group">
                     <label for="uploadPurchases">Upload Purchase Sheet</label>
                     <input type="file" id="uploadPurchases" accept=".csv">
-                    <p class="description">CSV with: stock_id, product_name, purchase_amount, purchase_date (max 1000 records).</p>
+                    <p class="description">CSV with: stock_id, product_name, purchase_amount, purchase_date, order_date (max 1000 records).</p>
                 </div>
                 <div class="input-group">
                     <label for="service_reliability">Service Reliability</label>
@@ -336,8 +308,8 @@
         <div class="card">
             <h2>Example</h2>
             <div class="example">
-                <p><strong>Sales CSV:</strong><br>stock_id,product_name,sales_amount,sales_date<br>S001,Widget A,5000,2025-06-01<br>S002,Widget B,5500,2025-06-15</p>
-                <p><strong>Purchase CSV:</strong><br>stock_id,product_name,purchase_amount,purchase_date<br>S001,Widget A,4000,2025-06-01<br>S002,Widget B,4500,2025-06-15</p>
+                <p><strong>Sales CSV:</strong><br>product_name,sales_date,stock_id,sales_amount<br>Widget A,2025-06-01,S001,5000<br>Widget B,2025-06-15,S002,5500</p>
+                <p><strong>Purchase CSV:</strong><br>order_date,stock_id,purchase_date,product_name,purchase_amount<br>2025-05-25,S001,2025-06-01,Widget A,4000<br>2025-06-01,S002,2025-06-15,Widget B,4500</p>
             </div>
         </div>
     </div>
@@ -386,16 +358,19 @@
 
                     data = data.map(row => {
                         const obj = {};
-                        if (headers.includes('stock_id') && headers.includes('product_name')) {
-                            obj['stock_id'] = row[headers.indexOf('stock_id')];
-                            obj['product_name'] = row[headers.indexOf('product_name')];
+                        const stockIdIdx = headers.indexOf('stock_id');
+                        const productNameIdx = headers.indexOf('product_name');
+                        if (stockIdIdx !== -1 && productNameIdx !== -1) {
+                            obj['stock_id'] = row[stockIdIdx];
+                            obj['product_name'] = row[productNameIdx];
                             if (headers.includes('sales_amount') && headers.includes('sales_date')) {
-                                obj['sales_amount'] = parseFloat(row[headers.indexOf('sales_amount')]) || 0;
-                                obj['sales_date'] = row[headers.indexOf('sales_date')];
+                                obj['sales_amount'] = headers.indexOf('sales_amount') !== -1 ? parseFloat(row[headers.indexOf('sales_amount')]) || 0 : 0;
+                                obj['sales_date'] = headers.indexOf('sales_date') !== -1 ? row[headers.indexOf('sales_date')] : '';
                             }
-                            if (headers.includes('purchase_amount') && headers.includes('purchase_date')) {
-                                obj['purchase_amount'] = parseFloat(row[headers.indexOf('purchase_amount')]) || 0;
-                                obj['purchase_date'] = row[headers.indexOf('purchase_date')];
+                            if (headers.includes('purchase_amount') && headers.includes('purchase_date') && headers.includes('order_date')) {
+                                obj['purchase_amount'] = headers.indexOf('purchase_amount') !== -1 ? parseFloat(row[headers.indexOf('purchase_amount')]) || 0 : 0;
+                                obj['purchase_date'] = headers.indexOf('purchase_date') !== -1 ? row[headers.indexOf('purchase_date')] : '';
+                                obj['order_date'] = headers.indexOf('order_date') !== -1 ? row[headers.indexOf('order_date')] : '';
                             }
                         }
                         return obj;
@@ -449,8 +424,13 @@
                 const dailySales = totalSales / daysActive || 0;
                 const stdDev = data.sales.length > 1 ? Math.sqrt(data.sales.reduce((sum, val) => sum + Math.pow(val - dailySales, 2), 0) / data.sales.length) / Math.sqrt(daysActive) : dailySales * 0.2 || 0;
                 const totalPurchases = data.purchases.reduce((sum, val) => sum + (val || 0), 0);
-                const purchaseDates = purchaseData.filter(p => p.stock_id === stockId).map(p => new Date(p.purchase_date)).sort((a, b) => a - b);
-                const leadTime = purchaseDates.length > 1 ? Math.round((purchaseDates[purchaseDates.length - 1] - purchaseDates[0]) / (1000 * 60 * 60 * 24) / (purchaseDates.length - 1)) : 7 || 0;
+                const purchaseRecords = purchaseData.filter(p => p.stock_id === stockId);
+                const leadTimes = purchaseRecords.map(p => {
+                    const orderDate = new Date(p.order_date);
+                    const purchaseDate = new Date(p.purchase_date);
+                    return (purchaseDate - orderDate) / (1000 * 60 * 60 * 24); // Difference in days
+                }).filter(lt => !isNaN(lt) && lt >= 0);
+                const leadTime = leadTimes.length > 0 ? Math.round(leadTimes.reduce((sum, lt) => sum + lt, 0) / leadTimes.length) : 7; // Average lead time or default to 7
                 const orderCost = totalPurchases / data.purchases.length * 0.1 || 100;
                 const unitCost = totalPurchases / totalSales || 200;
 
@@ -505,14 +485,16 @@
                         <th>Safety Stock</th>
                         <th>Reorder Point</th>
                         <th>Optimal Order Size</th>
+                        <th>Chart</th>
                     </tr>
             `;
 
-            const charts = [];
             for (const [stockId, data] of Object.entries(processedData)) {
                 const ss = safetyStock(data.daily_sales, data.lead_time, data.std_dev, data.service_reliability);
                 const rop = reorderPoint(data.daily_sales, data.lead_time, ss);
                 const orderQty = optimalOrderSize(data.daily_sales * data.annual_operating_days, data.order_cost, data.unit_cost * 0.25);
+                const maxValue = Math.max(ss, rop, orderQty);
+                const scaleFactor = 300 / maxValue; // Scale to fit within 300px width
 
                 tableHTML += `
                     <tr>
@@ -521,28 +503,32 @@
                         <td>${ss.toFixed(2)}</td>
                         <td>${rop.toFixed(2)}</td>
                         <td>${orderQty.toFixed(2)}</td>
+                        <td class="chart-cell">
+                            <svg viewBox="0 0 400 150">
+                                <line x1="50" y1="130" x2="350" y2="130" stroke="#000" stroke-width="1"/> <!-- X-axis -->
+                                <line x1="50" y1="20" x2="50" y2="130" stroke="#000" stroke-width="1"/> <!-- Y-axis -->
+                                <g><line x1="50" y1="110" x2="${50 + (ss * scaleFactor)}" y2="110" stroke="#2b6cb0" stroke-width="2"/><circle cx="${50 + (ss * scaleFactor)}" cy="110" r="3" fill="#2b6cb0"/><text x="${50 + (ss * scaleFactor) / 2}" y="120" font-size="8" text-anchor="middle">S:${ss.toFixed(2)}</text></g>
+                                <g><line x1="50" y1="70" x2="${50 + (rop * scaleFactor)}" y2="70" stroke="#e53e3e" stroke-width="2"/><circle cx="${50 + (rop * scaleFactor)}" cy="70" r="3" fill="#e53e3e"/><text x="${50 + (rop * scaleFactor) / 2}" y="80" font-size="8" text-anchor="middle">R:${rop.toFixed(2)}</text></g>
+                                <g><line x1="50" y1="30" x2="${50 + (orderQty * scaleFactor)}" y2="30" stroke="#38a169" stroke-width="2"/><circle cx="${50 + (orderQty * scaleFactor)}" cy="30" r="3" fill="#38a169"/><text x="${50 + (orderQty * scaleFactor) / 2}" y="40" font-size="8" text-anchor="middle">O:${orderQty.toFixed(2)}</text></g>
+                                <text x="350" y="135" font-size="8" text-anchor="end">${maxValue.toFixed(2)}</text> <!-- Max value label -->
+                                <text x="25" y="75" font-size="8" text-anchor="middle" transform="rotate(-90 25 75)">Metrics</text>
+                                <text x="200" y="145" font-size="8" text-anchor="middle">Units</text>
+                                <g transform="translate(50, 140)">
+                                    <circle cx="0" cy="0" r="3" fill="#2b6cb0"/>
+                                    <text x="5" y="5" font-size="8">Safety</text>
+                                    <circle cx="40" cy="0" r="3" fill="#e53e3e"/>
+            <text x="45" y="5" font-size="8">Reorder</text>
+            <circle cx="80" cy="0" r="3" fill="#38a169"/>
+            <text x="85" y="5" font-size="8">Order</text>
+        </g>
+    </svg>
+                        </td>
                     </tr>
                 `;
-
-                const maxValue = Math.max(ss, rop, orderQty);
-                charts.push(`
-                    <div class="chart">
-                        <div class="chart-title">Chart for ${data.product_name}</div>
-                        <svg viewBox="0 0 400 360">
-                            <line x1="50" y1="320" x2="350" y2="320" stroke="#000" stroke-width="1"/>
-                            <line x1="50" y1="40" x2="50" y2="320" stroke="#000" stroke-width="1"/>
-                            <g><line x1="100" y1="320" x2="100" y2="${320 - (ss / maxValue * 280)}" stroke="#2b6cb0" stroke-width="2"/><circle cx="100" cy="${320 - (ss / maxValue * 280)}" r="3" fill="#2b6cb0"/><text x="100" y="330" font-size="9" text-anchor="middle">Safety</text></g>
-                            <g><line x1="200" y1="320" x2="200" y2="${320 - (rop / maxValue * 280)}" stroke="#e53e3e" stroke-width="2"/><circle cx="200" cy="${320 - (rop / maxValue * 280)}" r="3" fill="#e53e3e"/><text x="200" y="330" font-size="9" text-anchor="middle">Reorder</text></g>
-                            <g><line x1="300" y1="320" x2="300" y2="${320 - (orderQty / maxValue * 280)}" stroke="#38a169" stroke-width="2"/><circle cx="300" cy="${320 - (orderQty / maxValue * 280)}" r="3" fill="#38a169"/><text x="300" y="330" font-size="9" text-anchor="middle">Order</text></g>
-                            <text x="45" y="150" font-size="9" transform="rotate(-90 45 150)">Units</text>
-                        </svg>
-                        <legend>Guide: Safety (Blue), Reorder (Red), Order (Green) levels</legend>
-                    </div>
-                `);
             }
 
             tableHTML += '</table>';
-            resultsDiv.innerHTML = tableHTML + '<div class="chart-container">' + charts.join('') + '</div>';
+            resultsDiv.innerHTML = tableHTML;
             resultsDiv.style.display = 'block';
         }
 
